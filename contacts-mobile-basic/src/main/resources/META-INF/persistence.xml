@@ -24,6 +24,22 @@
       <!-- If you are running in a production environment, add a managed 
          data source, the example data source is just for proofs of concept! -->
       <jta-data-source>java:jboss/datasources/JbossContactsMobileBasicQuickstartDS</jta-data-source>
+
+      <!-- Define the @Entity classes provided by the PicketLink IDM Simple Schema dependency. -->
+      <class>org.picketlink.idm.jpa.model.sample.simple.AttributedTypeEntity</class>
+      <class>org.picketlink.idm.jpa.model.sample.simple.AccountTypeEntity</class>
+      <class>org.picketlink.idm.jpa.model.sample.simple.RoleTypeEntity</class>
+      <class>org.picketlink.idm.jpa.model.sample.simple.GroupTypeEntity</class>
+      <class>org.picketlink.idm.jpa.model.sample.simple.IdentityTypeEntity</class>
+      <class>org.picketlink.idm.jpa.model.sample.simple.RelationshipTypeEntity</class>
+      <class>org.picketlink.idm.jpa.model.sample.simple.RelationshipIdentityTypeEntity</class>
+      <class>org.picketlink.idm.jpa.model.sample.simple.PartitionTypeEntity</class>
+      <class>org.picketlink.idm.jpa.model.sample.simple.PasswordCredentialTypeEntity</class>
+      <class>org.picketlink.idm.jpa.model.sample.simple.DigestCredentialTypeEntity</class>
+      <class>org.picketlink.idm.jpa.model.sample.simple.X509CredentialTypeEntity</class>
+      <class>org.picketlink.idm.jpa.model.sample.simple.OTPCredentialTypeEntity</class>
+      <class>org.picketlink.idm.jpa.model.sample.simple.AttributeTypeEntity</class>
+
       <properties>
          <!-- Properties for Hibernate -->
          <property name="hibernate.hbm2ddl.auto" value="create-drop" />

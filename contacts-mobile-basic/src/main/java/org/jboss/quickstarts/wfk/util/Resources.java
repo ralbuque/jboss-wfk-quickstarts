@@ -16,6 +16,8 @@
  */
 package org.jboss.quickstarts.wfk.util;
 
+import org.picketlink.annotations.PicketLink;
+
 import java.util.logging.Logger;
 
 import javax.enterprise.inject.Produces;
@@ -40,6 +42,11 @@ public class Resources {
     @Produces
     @PersistenceContext(unitName = "contacts_pu")
     private EntityManager em;
+
+    @Produces
+    @PicketLink
+    @PersistenceContext(unitName = "contacts_pu")
+    private EntityManager securityEntityManager;
 
     @Produces
     public Logger produceLog(InjectionPoint injectionPoint) {
