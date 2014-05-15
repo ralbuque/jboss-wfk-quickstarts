@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.quickstarts.wfk.contacts.security.service;
+package org.jboss.quickstarts.wfk.contacts.security.authentication;
 
 import org.jboss.quickstarts.wfk.contacts.security.authorization.UserLoggedIn;
 
