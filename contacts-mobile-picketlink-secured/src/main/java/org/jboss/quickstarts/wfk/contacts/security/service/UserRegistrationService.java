@@ -14,9 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.quickstarts.wfk.contacts.security.rest;
+package org.jboss.quickstarts.wfk.contacts.security.service;
 
-import org.jboss.quickstarts.wfk.contacts.security.model.UserRegistration;
 import org.picketlink.idm.IdentityManager;
 import org.picketlink.idm.credential.Password;
 import org.picketlink.idm.model.basic.BasicModel;
@@ -30,7 +29,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -71,6 +69,46 @@ public class UserRegistrationService {
             this.identityManager.updateCredential(newUser, password);
 
             return Response.ok().entity(newUser).build();
+        }
+    }
+
+    public static class UserRegistration {
+
+        private String firstName;
+        private String lastName;
+        private String userName;
+        private String password;
+
+        public String getFirstName() {
+            return this.firstName;
+        }
+
+        public void setFirstName(String firstName) {
+            this.firstName = firstName;
+        }
+
+        public String getLastName() {
+            return this.lastName;
+        }
+
+        public void setLastName(String lastName) {
+            this.lastName = lastName;
+        }
+
+        public String getUserName() {
+            return this.userName;
+        }
+
+        public void setUserName(String userName) {
+            this.userName = userName;
+        }
+
+        public String getPassword() {
+            return this.password;
+        }
+
+        public void setPassword(String password) {
+            this.password = password;
         }
     }
 }

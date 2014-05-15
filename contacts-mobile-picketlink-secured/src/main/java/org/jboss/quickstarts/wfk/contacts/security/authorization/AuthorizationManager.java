@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.quickstarts.wfk.contacts.security;
+package org.jboss.quickstarts.wfk.contacts.security.authorization;
 
 import org.apache.deltaspike.security.api.authorization.Secures;
-import org.jboss.quickstarts.wfk.contacts.security.annotation.AllowedRoles;
-import org.jboss.quickstarts.wfk.contacts.security.annotation.UserLoggedIn;
-import org.jboss.quickstarts.wfk.contacts.security.model.ApplicationRole;
+import org.jboss.quickstarts.wfk.contacts.security.authorization.AllowedRoles;
+import org.jboss.quickstarts.wfk.contacts.security.authorization.UserLoggedIn;
+import org.jboss.quickstarts.wfk.contacts.security.authorization.ApplicationRole;
 import org.picketlink.Identity;
 import org.picketlink.idm.IdentityManager;
 import org.picketlink.idm.RelationshipManager;
@@ -55,12 +55,12 @@ public class AuthorizationManager {
 
     /**
      * <p>
-     *  This authorization method provides the validation logic for resources annotated with the security annotation {@link org.jboss.quickstarts.wfk.contacts.security.annotation.AllowedRoles}.
+     *  This authorization method provides the validation logic for resources annotated with the security annotation {@link org.jboss.quickstarts.wfk.contacts.security.authorization.AllowedRoles}.
      * </p>
      * <p>
      *  Note that this method is also annotated with {@link Secures}, which is an annotation from Apache DeltaSpike.
      *  This annotation tells the @{link SecurityInterceptor} that this method must be called before the execution of
-     *  methods annotated with {@link org.jboss.quickstarts.wfk.contacts.security.annotation.AllowedRoles} in order to perform authorization checks.
+     *  methods annotated with {@link org.jboss.quickstarts.wfk.contacts.security.authorization.AllowedRoles} in order to perform authorization checks.
      * </p>
      *
      * @param invocationContext
@@ -102,7 +102,7 @@ public class AuthorizationManager {
     }
 
     /**
-     * <p>Authorization check for {@link org.jboss.quickstarts.wfk.contacts.security.annotation.UserLoggedIn} annotation.</p>
+     * <p>Authorization check for {@link org.jboss.quickstarts.wfk.contacts.security.authorization.UserLoggedIn} annotation.</p>
      *
      * @return
      */

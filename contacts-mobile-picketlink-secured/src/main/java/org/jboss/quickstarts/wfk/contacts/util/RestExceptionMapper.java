@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.quickstarts.wfk.contacts.security.rest;
+package org.jboss.quickstarts.wfk.contacts.util;
 
 import org.apache.deltaspike.security.api.authorization.AccessDeniedException;
-import org.jboss.quickstarts.wfk.contacts.security.AuthorizationManager;
+import org.jboss.quickstarts.wfk.contacts.security.authorization.AuthorizationManager;
 
 import javax.inject.Inject;
 import javax.ws.rs.core.Response;

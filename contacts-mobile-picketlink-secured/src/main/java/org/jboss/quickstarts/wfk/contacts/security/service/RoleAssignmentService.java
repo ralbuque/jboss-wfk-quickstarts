@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.quickstarts.wfk.contacts.security.rest;
+package org.jboss.quickstarts.wfk.contacts.security.service;
 
-import org.jboss.quickstarts.wfk.contacts.security.annotation.AllowedRoles;
-import org.jboss.quickstarts.wfk.contacts.security.model.ApplicationRole;
+import org.jboss.quickstarts.wfk.contacts.security.authorization.AllowedRoles;
+import org.jboss.quickstarts.wfk.contacts.security.authorization.ApplicationRole;
 import org.picketlink.idm.IdentityManager;
 import org.picketlink.idm.RelationshipManager;
 import org.picketlink.idm.model.basic.BasicModel;
@@ -45,7 +45,7 @@ import java.util.List;
  */
 @Stateless
 @Path("/security/role")
-public class RoleService {
+public class RoleAssignmentService {
 
     @Inject
     private IdentityManager identityManager;

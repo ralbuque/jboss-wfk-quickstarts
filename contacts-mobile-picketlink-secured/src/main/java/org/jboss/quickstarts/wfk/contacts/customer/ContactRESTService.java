@@ -16,9 +16,9 @@
  */
 package org.jboss.quickstarts.wfk.contacts.customer;
 
-import org.jboss.quickstarts.wfk.contacts.security.annotation.AllowedRoles;
-import org.jboss.quickstarts.wfk.contacts.security.annotation.UserLoggedIn;
-import org.jboss.quickstarts.wfk.contacts.security.model.ApplicationRole;
+import org.jboss.quickstarts.wfk.contacts.security.authorization.AllowedRoles;
+import org.jboss.quickstarts.wfk.contacts.security.authorization.UserLoggedIn;
+import org.jboss.quickstarts.wfk.contacts.security.authorization.ApplicationRole;
 
 import java.util.HashMap;
 import java.util.List;

@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.quickstarts.wfk.contacts.security.rest;
+package org.jboss.quickstarts.wfk.contacts.security.service;
 
-import org.jboss.quickstarts.wfk.contacts.security.AuthorizationManager;
-import org.jboss.quickstarts.wfk.contacts.security.annotation.UserLoggedIn;
-import org.jboss.quickstarts.wfk.contacts.security.model.ApplicationRole;
+import org.jboss.quickstarts.wfk.contacts.security.authorization.ApplicationRole;
+import org.jboss.quickstarts.wfk.contacts.security.authorization.AuthorizationManager;
+import org.jboss.quickstarts.wfk.contacts.security.authorization.UserLoggedIn;
 import org.picketlink.Identity;
 import org.picketlink.idm.IdentityManager;
 import org.picketlink.idm.model.Account;
@@ -32,7 +32,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -84,7 +83,7 @@ public class UserService {
     /**
      * <p>A simple class representing a user from a client perspective. It will usually be returned by the server with all user information, using JSON.</p>
      */
-    public static class AuthenticatedUser {
+    private class AuthenticatedUser {
 
         private Account account;
         private boolean isAdmin;

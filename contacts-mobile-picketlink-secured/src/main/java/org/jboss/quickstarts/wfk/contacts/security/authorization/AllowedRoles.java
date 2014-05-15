@@ -14,32 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.quickstarts.wfk.contacts.security.rest;
+package org.jboss.quickstarts.wfk.contacts.security.authorization;
 
-import org.jboss.quickstarts.wfk.contacts.security.annotation.UserLoggedIn;
-import org.picketlink.Identity;
+import org.apache.deltaspike.security.api.authorization.SecurityBindingType;
 
-import javax.inject.Inject;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.core.Response;
+import javax.enterprise.util.Nonbinding;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * <p>A RESTful endpoint to logout users.</p>
+ * <p>This security annotation is used to declare the allowed roles for a specific type or method.</p>
  *
- * @author Pedro Igor
+ * @author  Pedro Igor
  */
-@Path("/security/logout")
-public class LogoutService {
+@Retention(value = RetentionPolicy.RUNTIME)
+@Target({ ElementType.TYPE, ElementType.METHOD })
+@Documented
+@SecurityBindingType
+public @interface AllowedRoles {
 
-    @Inject
-    private Identity identity;
-
-    @POST
-    @UserLoggedIn
-    public Response logout() {
-        this.identity.logout();
-        return Response.ok().build();
-    }
-
+    @Nonbinding
+    ApplicationRole[] value() default {};
 }

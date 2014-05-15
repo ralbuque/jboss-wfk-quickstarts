@@ -16,7 +16,7 @@
  */
 package org.jboss.quickstarts.wfk.contacts.security;
 
-import org.jboss.quickstarts.wfk.contacts.security.model.ApplicationRole;
+import org.jboss.quickstarts.wfk.contacts.security.authorization.ApplicationRole;
 import org.picketlink.idm.IdentityManager;
 import org.picketlink.idm.PartitionManager;
 import org.picketlink.idm.RelationshipManager;

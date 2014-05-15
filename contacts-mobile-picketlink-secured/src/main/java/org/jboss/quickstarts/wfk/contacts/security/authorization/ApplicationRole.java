@@ -14,30 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.quickstarts.wfk.contacts.security.annotation;
-
-import org.apache.deltaspike.security.api.authorization.SecurityBindingType;
-import org.jboss.quickstarts.wfk.contacts.security.model.ApplicationRole;
-
-import javax.enterprise.util.Nonbinding;
-
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+package org.jboss.quickstarts.wfk.contacts.security.authorization;
 
 /**
- * <p>This security annotation is used to declare the allowed roles for a specific type or method.</p>
+ * <p>A {@link Enum} with all roles supported by the application.</p>
  *
- * @author  Pedro Igor
+ * @see org.jboss.quickstarts.wfk.contacts.security.authorization.AllowedRoles
+ *
+ * @author Pedro Igor
  */
-@Retention(value = RetentionPolicy.RUNTIME)
-@Target({ ElementType.TYPE, ElementType.METHOD })
-@Documented
-@SecurityBindingType
-public @interface AllowedRoles {
+public enum ApplicationRole {
 
-    @Nonbinding
-    ApplicationRole[] value() default {};
+    /**
+     * <p>Read-only permission.</p>
+     */
+    USER,
+
+    /**
+     * <p>Create and edit permissions.</p>
+     */
+    MAINTAINER,
+
+    /**
+     * <p>Can do anything.</p>
+     */
+    ADMIN
+
 }

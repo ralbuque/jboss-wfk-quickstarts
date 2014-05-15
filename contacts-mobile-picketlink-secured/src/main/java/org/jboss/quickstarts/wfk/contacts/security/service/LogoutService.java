@@ -14,33 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.quickstarts.wfk.contacts.security.rest;
+package org.jboss.quickstarts.wfk.contacts.security.service;
 
-import org.jboss.quickstarts.wfk.contacts.security.annotation.UserLoggedIn;
+import org.jboss.quickstarts.wfk.contacts.security.authorization.UserLoggedIn;
+import org.picketlink.Identity;
 
+import javax.inject.Inject;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 /**
- * <p>This is a simple RESTful service that returns a HTTP Status Code 200 after a successful authentication.</p>
- *
- * <p>Before reaching this service, the {@link org.picketlink.authentication.web.AuthenticationFilter}, configured in <code>web.xml</code>,
- * kicks in to authenticate the user.</p>
- *
- * <p>The {@link org.jboss.quickstarts.wfk.contacts.security.annotation.UserLoggedIn} enforce that only previously authenticated users are allowed to invoke this service.</p>
+ * <p>A RESTful endpoint to logout users.</p>
  *
  * @author Pedro Igor
  */
-@Path("/security/login")
-public class LoginService {
+@Path("/security/logout")
+public class LogoutService {
+
+    @Inject
+    private Identity identity;
 
     @POST
-    @Produces(MediaType.APPLICATION_JSON)
     @UserLoggedIn
-    public Response login() {
+    public Response logout() {
+        this.identity.logout();
         return Response.ok().build();
     }
 
