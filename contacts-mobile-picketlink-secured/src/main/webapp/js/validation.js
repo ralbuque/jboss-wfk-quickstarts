@@ -18,10 +18,14 @@
 CONTACTS.namespace("CONTACTS.validation.displayServerSideErrors");
 CONTACTS.namespace("CONTACTS.validation.validateName");
 CONTACTS.namespace("CONTACTS.validation.formEmail");
+CONTACTS.namespace("CONTACTS.validation.formUserName");
 CONTACTS.namespace("CONTACTS.validation.validateEmailUniqueness");
 CONTACTS.namespace("CONTACTS.validation.runFormValidators");
 CONTACTS.namespace("CONTACTS.validation.addContactsFormValidator");
 CONTACTS.namespace("CONTACTS.validation.editContactsFormValidator");
+CONTACTS.namespace("CONTACTS.validation.signUpFormValidator");
+CONTACTS.namespace("CONTACTS.validation.signInFormValidator");
+CONTACTS.namespace("CONTACTS.validation.assignRoleFormValidator");
 
 /**
  * jQuery Mobile and moblie devices do not currently support HTML5 form validation.  Therefore, basic things like 
@@ -139,6 +143,24 @@ $(document).ready(function() {
     $.validator.addMethod("emailUnique", function(value, element) {
         return this.optional(element) || CONTACTS.validation.validateEmailUniqueness(value);
     }, "That email is already used, please use a unique email.");
+    
+    /**
+     * Compare the userName in the form to the one returned from the server.  If they match then the user is using
+     * a userName that is already in use. 
+     * (hint: it is only returned after the submit is fired, otherwise it is null)
+     */
+    CONTACTS.validation.validateUserNameUniqueness = function(userName) {
+    	if (CONTACTS.validation.formUserName === userName){
+    		return false;
+    	} else {
+    		return true;
+    	}
+    };
+    
+    // Create a custom method for the Validator to check if a userName is already used.
+    $.validator.addMethod("userNameUnique", function(value, element) {
+    	return this.optional(element) || CONTACTS.validation.validateUserNameUniqueness(value);
+    }, "That userName is already in use.");
     
     /**
      *  We need a way to make apply the form validation in cases where the forms don't exist yet, like the unit tests.
@@ -281,7 +303,8 @@ $(document).ready(function() {
                 },
                 userName: {
                     required: true,
-                    email: true
+                    // This is the custom validator created above to make sure that the userName is not already being used.
+                    userNameUnique: true
                 },
                 password: {
                     required: true
@@ -295,8 +318,7 @@ $(document).ready(function() {
                     required: "Please specify a last name."
                 },
                 userName: {
-                    required: "Please enter an e-mail.",
-                    email: "The email address must be in the format of name@company.domain."
+                    required: "Please enter a userName."
                 },
                 password: {
                     required: "Please enter a password."
