@@ -321,7 +321,7 @@
             <form name="signin-form" id="signin-form" class="contact_info" method="post" data-ajax="false">
                 <div>
                     <label for="signin-form-input-email">User Name:</label>
-                    <input name="loginName" id="signin-form-input-email" class="name" data-clear-btn="true" value="" placeholder="Enter your user name." type="text"/>
+                    <input name="loginName" id="signin-form-input-email" class="userName" data-clear-btn="true" value="" placeholder="Enter your user name." type="text"/>
                 </div>
                 <div>
                     <label for="signin-form-input-password">Password:</label>
@@ -349,15 +349,35 @@
                     <input name="lastName" id="signup-form-input-lastName" class="name" data-clear-btn="true" value="" placeholder="Enter a last name." type="text"/>
                 </div>
                 <div>
-                    <label for="signup-form-input-username">User Name:</label>
-                    <input name="userName" id="signup-form-input-username" class="name" data-clear-btn="true" value="" placeholder="Enter Your User Name" type="text"/>
+                    <label for="signup-form-input-userName">User Name:</label>
+                    <input name="userName" id="signup-form-input-userName" class="userName" data-clear-btn="true" value="" placeholder="Enter Your User Name" type="text"/>
                 </div>
                 <div>
                     <label for="signup-form-input-password">Password:</label>
                     <input name="password" id="signup-form-input-password" class="name" data-clear-btn="true" value="" placeholder="Enter Your Password" type="password"/>
                 </div>
-                <input id="submit-signup-btn" data-inline="true" type="submit" value="Sign Up" />
+                <input id="submit-signup-btn" data-inline="true" type="submit" value="Save" />
+                <input id="clear-signup-btn" data-inline="true" type="reset" value="Clear"  />
+                <input id="cancel-signup-btn" data-inline="true" type="reset" value="Cancel"  />
             </form>
+        </div>
+        <div data-role="footer" data-position="fixed" >
+            <fieldset class="ui-grid-b">
+                <!-- There is currently a bug in jQM 1.4.2. The CSS forces all ui-btn in a toolbar(header or footer) to be
+                     set to display:inline-block.  This interferes with the Grid making the buttons appear normal sized. 
+                     To fix this we had to override the style with a 'block-button' class referenced in app.css, this 
+                     should be removed when the bug is fixed.-->
+                <div class="ui-block-a">
+                    <a class="ui-btn ui-corner-all ui-shadow ui-btn-b block-button" onclick="$('#submit-signup-btn').trigger('click');">Save</a>
+                </div>
+                <div class="ui-block-b">
+                    <a class="ui-btn ui-corner-all ui-shadow block-button" onclick="$('#clear-signup-btn').trigger('click');">Clear</a>
+                </div>
+                <div class="ui-block-c">
+                    <a href="#contacts-list-page" class="ui-btn ui-corner-all ui-shadow block-button" onclick="$('#cancel-signup-btn').trigger('click');">Cancel</a>
+                </div>
+            </fieldset>             
+        </div>
         </div>
     </div>
 

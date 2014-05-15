@@ -50,14 +50,18 @@ public class UserRegistrationService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response create(UserRegistration userRegistration) {
+    	
+    	// Create a User based on the userName.
         User newUser = new User(userRegistration.getUserName());
 
+        // Add the first and last name of the user.
         newUser.setFirstName(userRegistration.getFirstName());
         newUser.setLastName(userRegistration.getLastName());
 
+        // Check if the userName is already being used. If it is send an error message back. If not store the password.
         if (BasicModel.getUser(this.identityManager, newUser.getLoginName()) != null) {
             Map<String, String> responseObj = new HashMap<String, String>();
-            responseObj.put("email", "The email is already registered.");
+            responseObj.put("userName", "The userName is already registered.");
             return Response.status(Response.Status.BAD_REQUEST).entity(responseObj).build();
         } else {
             this.identityManager.add(newUser);

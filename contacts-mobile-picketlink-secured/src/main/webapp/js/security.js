@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//var currentUser;
+
 CONTACTS.namespace("CONTACTS.security.currentUser");
 CONTACTS.namespace("CONTACTS.security.loadCurrentUser");
 CONTACTS.namespace("CONTACTS.security.submitSignIn");
@@ -212,7 +212,10 @@ $(document).ready(function() {
             	console.log(getCurrentTime() + " [js/security.js] (submitSignUp) - submit event) - start");
                 event.preventDefault();
 
+                // Transform the form fields into JSON.
+                // Must pull from the specific form so that we get the right data in case another form has data in it.
                 var serializedForm = $("#signup-form").serializeObject();
+                // Turn the object into a String.
                 var userData = JSON.stringify(serializedForm);
 
                 var jqxhr = $.ajax({
@@ -224,8 +227,7 @@ $(document).ready(function() {
                 }).done(function(data, textStatus, jqXHR) {
 
                 	// Reset this flag when the form passes validation.
-// We are not validating usernames for uniqueness yet, when we do we will need this.
-//                    CONTACTS.validation.formEmail = null;
+                    CONTACTS.validation.formUserName = null;
 
                 	// Clear the form or else the next time you go to sign up the last one will still be there.
                     $("#signup-form")[0].reset();
@@ -233,7 +235,8 @@ $(document).ready(function() {
                     // Remove errors display as a part of the validation system.
                     $(".invalid").remove();
 
-                    $( "body" ).pagecontainer( "change", "#signin-page");
+                    // Because we turned off the automatic page transition to catch server side error we need to do it ourselves.
+                    $("body").pagecontainer("change", "#signin-page");
                     
                 }).fail(function(jqXHR, textStatus, errorThrown) {
                 	// Remove errors display as a part of the validation system.
@@ -241,22 +244,30 @@ $(document).ready(function() {
 
                 	// Check for server side validation errors.  This should catch the email uniqueness validation.
                     if ((jqXHR.status === 409) || (jqXHR.status === 400)) {
+                    	
+                    	// Get the user.
                         var newUser = $("#signup-form")[0];
+                        
+                        // Extract the error messages from the server.
                         var errorMsg = $.parseJSON(jqXHR.responseText);
 
+                        // We only want to set this flag if there is actual email error.
                         $.each(errorMsg, function(index, val) {
-                            if (index === "email"){
+                            if (index === "userName"){
+                            	// Get the User userName and set it for comparison in the form validation.
                                 $.each(newUser, function(index, val){
-                                    if (val.name == "email"){
-                                        CONTACTS.validation.formEmail = val.value;
+                                	// This will look for an element with the name/key of "userName" and pull it's value.
+                                    if (val.name == "userName"){
+                                        CONTACTS.validation.formUserName = val.value;
                                         return false;
                                     }
                                 });
                             }
                         });
 
+                        // Apply the error to the form.
                         CONTACTS.validation.displayServerSideErrors("#signup-form", errorMsg);
-                        
+
                         console.log(getCurrentTime() + " [js/security.js] (submitSignUp) - restSignUpEndpoint - error in ajax" +
                                 " - jqXHR = " + jqXHR.status +
                                 ", textStatus = " + textStatus +
@@ -313,10 +324,6 @@ $(document).ready(function() {
                 }).done(function(data, textStatus, jqXHR) {
                 	console.log(getCurrentTime() + " [js/security.js] (submitSignIn) - ajax done");
                 	
-                	// Reset this flag when the form passes validation.
-// I think this is not needed for sign-in.
-//                    CONTACTS.validation.formEmail = null;
-
                 	// Clear the form or else the next time you go to sign in the last one will still be there.
                     $("#signin-form")[0].reset();
                     
@@ -335,7 +342,7 @@ $(document).ready(function() {
                 	if (jqXHR.status === 401) {
                 		
                 		// If the log in fails then send them to a pop-up telling them the log in attempt was invalid.
-                        $( "body" ).pagecontainer( "change", "#invalid-credentials-dialog", { transition: "pop" });
+                        $("body").pagecontainer("change", "#invalid-credentials-dialog", { transition: "pop" });
                         
                         console.log(getCurrentTime() + " [js/security.js] (submitSignIn) - error in ajax " +
                                 " - jqXHR = " + jqXHR.status +
