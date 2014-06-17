@@ -43,18 +43,26 @@ public class RestExceptionMapper implements ExceptionMapper<Throwable> {
         }
 
         Response.ResponseBuilder builder;
+        String message;
 
         if (AccessDeniedException.class.isInstance(exception)) {
             if (getIdentity().isLoggedIn()) {
                 builder = Response.status(Response.Status.FORBIDDEN);
+                message = "Access Denied.";
             } else {
                 builder = Response.status(Response.Status.UNAUTHORIZED);
+                message = "Authentication Required.";
             }
         } else {
             builder = Response.status(Response.Status.BAD_REQUEST);
+            message = "Invalid request.";
         }
 
-        return builder.entity(new HashMap()).build();
+        HashMap payload = new HashMap();
+
+        payload.put("message", message);
+
+        return builder.entity(payload).build();
     }
 
     private Identity getIdentity() {
