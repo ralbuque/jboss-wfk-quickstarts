@@ -71,6 +71,8 @@ You can also sign up for a new account. In this case you'll be assigned to a **U
 
 This application also allows you to assign roles to users. This functionality is only accessible for **ADMINISTRATOR** users.
 
+Before you run this example, you must create certificates and configure the server to use SSL.
+
 *Note: This quickstart uses the following Jackson libraries that are a part of the JBoss EAP private API.*
 
 * *org.codehaus.jackson.jackson-core-asl*
@@ -101,6 +103,45 @@ Configure Maven
 
 If you have not yet done so, you must [Configure Maven](../README.md#configure-maven) before testing the quickstarts.
 
+Create the Server Certicate
+------------------------
+
+1. Open a command line and navigate to the JBoss server `configuration` directory:
+
+        For Linux:   JBOSS_HOME/standalone/configuration
+        For Windows: JBOSS_HOME\standalone\configuration
+2. Create a certificate for your server using the following command:
+
+        keytool -genkey -alias server -keyalg RSA -keystore server.keystore -storepass change_it -validity 365
+
+   You'll be prompted for some additional information, such as your name, organizational unit, and location. Enter any values you prefer.
+3. The certificates and keystores are now properly configured.
+
+
+Configure the Server to Use SSL
+------------------------
+
+Now that the certificates and keystores are properly configured, you must enable SSL in the server configuration. 
+
+Configure the HTTPS Connector in the Web Subsystem by Running the JBoss CLI Script (JBoss Enterprise Application Platform)
+------------------------
+
+1. Start the WildFly Server by typing the following:
+
+        For Linux:  JBOSS_HOME/bin/standalone.sh 
+        For Windows:  JBOSS_HOME\bin\standalone.bat
+2. Open a new command line, navigate to the root directory of this quickstart, and run the following command, replacing JBOSS_HOME with the path to your server:
+
+        JBOSS_HOME/bin/jboss-cli.sh --connect --file=configure-https.cli
+
+This script adds and configures the `https` connector to the `web` subsystem in the server configuration. You should see the following result when you run the script:
+
+        {"outcome" => "success"}
+        {"outcome" => "success"}
+        {"outcome" => "success"}
+
+This command reloads the server configuration before completion. You don`t need to manually stop/start the server to the configuration take effect.
+
 
 Start the JBoss EAP Server
 -----------------------
@@ -118,6 +159,12 @@ Start the JBoss EAP Server
         For Linux:   EAP_HOME/bin/standalone.sh -b 0.0.0.0
         For Windows: EAP_HOME\bin\standalone.bat -b 0.0.0.0
 
+Test the Server SSL Configuration
+---------------------------------
+
+To test the SSL configuration, access: <https://localhost:8443>
+
+If it is configured correctly, you should be asked to trust the server certificate.
 
 Build and Deploy the Quickstart
 -------------------------------
@@ -134,7 +181,7 @@ Build and Deploy the Quickstart
 Access the application
 ----------------------
 
-Access the running client application in a browser at the following URL: <http://localhost:8080/jboss-contacts-mobile-picketlink-secured/>.
+Access the running client application in a browser at the following URL: <https://localhost:8443/jboss-contacts-mobile-picketlink-secured/>.
 
 The application is made up of the following pages:
 
