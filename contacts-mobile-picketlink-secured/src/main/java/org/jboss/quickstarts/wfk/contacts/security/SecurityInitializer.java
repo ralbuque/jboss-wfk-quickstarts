@@ -16,18 +16,24 @@
  */
 package org.jboss.quickstarts.wfk.contacts.security;
 
-import org.jboss.quickstarts.wfk.contacts.security.authorization.ApplicationRole;
+import org.picketlink.event.PartitionManagerCreateEvent;
 import org.picketlink.idm.IdentityManager;
 import org.picketlink.idm.PartitionManager;
 import org.picketlink.idm.RelationshipManager;
+import org.picketlink.idm.config.SecurityConfigurationException;
 import org.picketlink.idm.credential.Password;
+import org.picketlink.idm.model.Attribute;
+import org.picketlink.idm.model.basic.Realm;
 import org.picketlink.idm.model.basic.Role;
 import org.picketlink.idm.model.basic.User;
 
-import javax.annotation.PostConstruct;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
-import javax.inject.Inject;
+import javax.enterprise.event.Observes;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
 
 import static org.picketlink.idm.model.basic.BasicModel.getRole;
 import static org.picketlink.idm.model.basic.BasicModel.getUser;
@@ -47,19 +53,56 @@ import static org.picketlink.idm.model.basic.BasicModel.grantRole;
 @Singleton
 public class SecurityInitializer {
 
-    @Inject
-    private PartitionManager partitionManager;
+    public static final String KEYSTORE_FILE_PATH = "/keystore.jks";
 
-    /**
-     * <p>Create the initial set of users.</p> 
-     * 
-     * <p><b>This should be changed for production use.</b></p>
-     */
-    @PostConstruct
-    public void createUsers() {
-        createUser("john", "john", ApplicationRole.USER);
-        createUser("duke", "duke", ApplicationRole.MAINTAINER);
-        createUser("admin", "admin", ApplicationRole.ADMIN);
+    private KeyStore keyStore;
+
+    public void configureDefaultPartition(@Observes PartitionManagerCreateEvent event) {
+        PartitionManager partitionManager = event.getPartitionManager();
+
+        createDefaultPartition(partitionManager);
+
+        createUser("john", "john", ApplicationRole.USER, partitionManager);
+        createUser("duke", "duke", ApplicationRole.MAINTAINER, partitionManager);
+        createUser("admin", "admin", ApplicationRole.ADMIN, partitionManager);
+    }
+
+    private void createDefaultPartition(PartitionManager partitionManager) {
+        Realm partition = partitionManager.getPartition(Realm.class, Realm.DEFAULT_REALM);
+
+        if (partition == null) {
+            try {
+                partition = new Realm(Realm.DEFAULT_REALM);
+
+                partition.setAttribute(new Attribute<byte[]>("PublicKey", getPublicKey()));
+                partition.setAttribute(new Attribute<byte[]>("PrivateKey", getPrivateKey()));
+
+                partitionManager.add(partition);
+            } catch (Exception e) {
+                throw new SecurityConfigurationException("Could not create default partition.", e);
+            }
+        }
+    }
+
+    private byte[] getPrivateKey() throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException {
+        return getKeyStore().getKey("servercert", "test123".toCharArray()).getEncoded();
+    }
+
+    private byte[] getPublicKey() throws KeyStoreException {
+        return getKeyStore().getCertificate("servercert").getPublicKey().getEncoded();
+    }
+
+    private KeyStore getKeyStore() {
+        if (this.keyStore == null) {
+            try {
+                this.keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+                getKeyStore().load(getClass().getResourceAsStream(KEYSTORE_FILE_PATH), "store123".toCharArray());
+            } catch (Exception e) {
+                throw new SecurityException("Could not load key store.", e);
+            }
+        }
+
+        return this.keyStore;
     }
 
     /**
@@ -69,8 +112,8 @@ public class SecurityInitializer {
      * @param password
      * @param userRole
      */
-    private void createUser(String loginName, String password, ApplicationRole userRole) {
-        IdentityManager identityManager = this.partitionManager.createIdentityManager();
+    private void createUser(String loginName, String password, String userRole, PartitionManager partitionManager) {
+        IdentityManager identityManager = partitionManager.createIdentityManager();
 
         // user already exists
         if (getUser(identityManager, loginName) != null) {
@@ -87,15 +130,15 @@ public class SecurityInitializer {
         // let's update the password-based credential for this user
         identityManager.updateCredential(user, credential);
 
-        Role role = getRole(identityManager, userRole.name());
+        Role role = getRole(identityManager, userRole);
 
         // role does not exists, let's create it
         if (role == null) {
-            role = new Role(userRole.name());
+            role = new Role(userRole);
             identityManager.add(role);
         }
 
-        RelationshipManager relationshipManager = this.partitionManager.createRelationshipManager();
+        RelationshipManager relationshipManager = partitionManager.createRelationshipManager();
 
         // let's grant to the user the given role
         grantRole(relationshipManager, user, role);

@@ -16,15 +16,9 @@
  */
 package org.jboss.quickstarts.wfk.contacts.customer;
 
-import org.jboss.quickstarts.wfk.contacts.security.authorization.RequiresAccount;
-import org.jboss.quickstarts.wfk.contacts.security.authorization.RolesAllowed;
-import org.jboss.quickstarts.wfk.contacts.security.authorization.ApplicationRole;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Logger;
+import org.jboss.quickstarts.wfk.contacts.security.ApplicationRole;
+import org.picketlink.authorization.annotations.LoggedIn;
+import org.picketlink.authorization.annotations.RolesAllowed;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -39,9 +33,14 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.WebApplicationException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Logger;
 
 /**
  * JAX-RS Example
@@ -61,7 +60,7 @@ import javax.ws.rs.WebApplicationException;
  * transaction demarcation when accessing the database." - Antonio Goncalves
  * 
  */
-@Path("/contacts")
+@Path("/private/contacts")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @Stateless
@@ -78,7 +77,7 @@ public class ContactRESTService {
      * @return List of Contacts
      */
     @GET
-    @RequiresAccount
+    @LoggedIn
     public Response retrieveAllContacts() {
         List<Contact> contacts = service.findAllOrderedByName();
         if (contacts.isEmpty()) {
@@ -94,7 +93,7 @@ public class ContactRESTService {
      */
     @GET
     @Path("/{email}")
-    @RequiresAccount
+    @LoggedIn
     public Response retrieveContactsByEmail(@PathParam("email") String email) {
         Contact contact = service.findByEmail(email);
         if (contact == null) {
@@ -111,7 +110,7 @@ public class ContactRESTService {
      */
     @GET
     @Path("/{id:[0-9][0-9]*}")
-    @RequiresAccount
+    @LoggedIn
     public Response retrieveContactById(@PathParam("id") long id) {
         Contact contact = service.findById(id);
         if (contact == null) {

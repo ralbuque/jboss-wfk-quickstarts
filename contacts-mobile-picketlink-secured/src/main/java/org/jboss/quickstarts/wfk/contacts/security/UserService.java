@@ -16,12 +16,12 @@
  */
 package org.jboss.quickstarts.wfk.contacts.security;
 
-import org.jboss.quickstarts.wfk.contacts.security.authorization.ApplicationRole;
-import org.jboss.quickstarts.wfk.contacts.security.authorization.AuthorizationManager;
-import org.jboss.quickstarts.wfk.contacts.security.authorization.RequiresAccount;
 import org.picketlink.Identity;
+import org.picketlink.authorization.annotations.LoggedIn;
 import org.picketlink.idm.IdentityManager;
+import org.picketlink.idm.RelationshipManager;
 import org.picketlink.idm.model.Account;
+import org.picketlink.idm.model.basic.Role;
 import org.picketlink.idm.model.basic.User;
 import org.picketlink.idm.query.IdentityQuery;
 
@@ -35,13 +35,16 @@ import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.picketlink.idm.model.basic.BasicModel.getRole;
+import static org.picketlink.idm.model.basic.BasicModel.hasRole;
+
 /**
  * <p>A RESTful endpoint providing a few methods to manage users.</p>
  *
  * @author Pedro Igor
  */
 @Stateless
-@Path("/security/user")
+@Path("/private/security/user")
 public class UserService {
 
     /**
@@ -54,7 +57,7 @@ public class UserService {
     private IdentityManager identityManager;
 
     @Inject
-    private AuthorizationManager authorizationManager;
+    private RelationshipManager relationshipManager;
 
     /**
      * <p>Create a wrapper that holds an Identity and if it has Admin rights, then return it.</p>
@@ -64,9 +67,13 @@ public class UserService {
     @Path("/info")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @RequiresAccount
+    @LoggedIn
     public Response getCurrentUser() {
-        AuthenticatedUser authenticatedUser = new AuthenticatedUser(this.identity.getAccount(), this.authorizationManager.hasRole(ApplicationRole.ADMIN.name()));
+        Role adminRole = getRole(this.identityManager, ApplicationRole.ADMIN);
+        Account authenticatedAccount = this.identity.getAccount();
+        boolean isAdmin = hasRole(this.relationshipManager, authenticatedAccount, adminRole);
+
+        AuthenticatedUser authenticatedUser = new AuthenticatedUser(authenticatedAccount, isAdmin);
 
         return Response.ok().entity(authenticatedUser).build();
     }
@@ -78,7 +85,7 @@ public class UserService {
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @RequiresAccount
+    @LoggedIn
     public Response getAll() {
         IdentityQuery<User> query = this.identityManager.createIdentityQuery(User.class);
         List<User> result = query.getResultList();

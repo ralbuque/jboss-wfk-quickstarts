@@ -26,7 +26,29 @@ CONTACTS.namespace("CONTACTS.security.restSecurityEndpoint");
 CONTACTS.security.currentUser = undefined;
 
 // Set this variable for all Security REST APIs base URL.
-CONTACTS.security.restSecurityEndpoint = "rest/security/";
+CONTACTS.security.restSecurityEndpoint = "rest/private/security/";
+
+var securityService;
+
+$( document ).ready(function() {
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            securityService.secureRequest(xhr);
+        },
+        error: function (x, e) {
+            if (x.status === 401) {
+                console.log("[INFO] Unauthorized response.");
+                securityService.endSession();
+            } else if (x.status == 400) {
+                console.log("[ERROR] Bad request response from the server.");
+            } else if (x.status == 500) {
+                console.log("[ERROR] Internal server error.");
+            } else {
+                console.log("[ERROR] Unexpected error from server.");
+            }
+        }
+    });
+});
 
 /**
  * It is recommended to bind to this event instead of DOM ready() because this will work regardless of whether 
@@ -184,6 +206,7 @@ $(document).ready(function() {
         CONTACTS.security.submitSignIn();
         CONTACTS.security.submitSignUp();
         CONTACTS.security.submitAssignRole();
+        securityService = new SecurityService();
         console.log(getCurrentTime() + " [js/security.js] (initSecurity) - end");
     };
 
@@ -210,7 +233,7 @@ $(document).ready(function() {
                 var userData = JSON.stringify(serializedForm);
 
                 var jqxhr = $.ajax({
-                    url: restSecurityEndpoint + "registration",
+                    url: "rest/security/registration",
                     contentType: "application/json",
                     dataType: "json",
                     data: userData,
@@ -305,7 +328,7 @@ $(document).ready(function() {
 
                 // Send the login and password to the server for Auth-n and Auth-z
                 var jqxhr = $.ajax({
-                    url: restSecurityEndpoint + "user/info",
+                    url: restSecurityEndpoint + "/user/info",
                     contentType: "application/json",
                     dataType: "json",
                     headers: {
@@ -313,6 +336,7 @@ $(document).ready(function() {
                     },
                     type: "GET"
                 }).done(function(data, textStatus, jqXHR) {
+                    securityService.initSession(data);
                     console.log(getCurrentTime() + " [js/security.js] (submitSignIn) - ajax done");
                     
                     // Clear the form or else the next time you go to sign in the last one will still be there.
@@ -439,6 +463,36 @@ $(document).ready(function() {
                     ", responseText = " + jqXHR.responseText);
         });
         console.log(getCurrentTime() + " [js/security.js] (loadCurrentUser) - end");
+    };
+
+    var SecurityService = function() {
+        this.initSession = function(response) {
+            console.log("[INFO] Initializing user session.");
+            console.log("[INFO] Token is :" + response.authctoken);
+            console.log("[INFO] Token Stored in session storage.");
+            // persist token, user id to the storage
+            sessionStorage.setItem('token', response.authctoken);
+        };
+
+        this.endSession = function() {
+            console.log("[INFO] Ending User Session.");
+            sessionStorage.removeItem('token');
+            console.log("[INFO] Token removed from session storage.");
+        };
+
+        this.getToken = function() {
+            return sessionStorage.getItem('token');
+        };
+
+        this.secureRequest = function(requestConfig) {
+            var token = this.getToken();
+
+            if(token != null && token != '' && token != 'undefined') {
+                console.log("[INFO] Securing request.");
+                console.log("[INFO] Setting x-session-token header: " + token);
+                requestConfig.setRequestHeader('Authorization',' Token ' + token);
+            }
+        };
     };
 
     initSecurity();

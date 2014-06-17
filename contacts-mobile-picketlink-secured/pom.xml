@@ -53,7 +53,11 @@
         <version.jboss.bom.wfk>2.6.0-build-1</version.jboss.bom.wfk>
 
         <!-- Define the version of the PicketLink BOM -->
-        <version.picketlink>2.5.3.SP5-redhat-1</version.picketlink>
+        <version.picketlink>2.6.0.CR5</version.picketlink>
+
+        <!-- JSON-P Dependencies -->
+        <version.javax.json>1.0.0.Final</version.javax.json>
+        <version.glassfish.javax.json>1.0.4</version.glassfish.javax.json>
 
         <!-- Other dependency versions -->
         <version.org.eclipse.m2e>1.0.0</version.org.eclipse.m2e>
@@ -87,17 +91,11 @@
                 <scope>import</scope>
             </dependency>
 
-            <!-- JBoss distributes a complete set of Java EE 6 APIs including
-                 a Bill of Materials (BOM). A BOM specifies the versions of a "stack" (or
-                 a collection) of artifacts. We use this here so that we always get the correct
-                 versions of artifacts. Here we use the jboss-javaee-6.0-with-deltaspike stack
-                 (you can read this as the JBoss stack of the Java EE 6 APIs with Deltaspike).
-                 You can actually use this stack with any version of JBoss that implements
-                 Java EE 6, not just JBoss EAP 6! -->
+            <!-- PicketLink JEE 6 BOM defines all the necessary PicketLink dependencies and versions. -->
             <dependency>
-                <groupId>org.jboss.bom.wfk</groupId>
-                <artifactId>jboss-javaee-6.0-with-deltaspike</artifactId>
-                <version>${version.jboss.bom.wfk}</version>
+                <groupId>org.picketlink</groupId>
+                <artifactId>picketlink-javaee-6.0</artifactId>
+                <version>${version.picketlink}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -123,25 +121,6 @@
                 <version>${version.jboss.bom.eap}</version>
                 <type>pom</type>
                 <scope>import</scope>
-            </dependency>
-
-            <!--
-                Remove these PicketLink dependencies once jboss-javaee-6.0-with-security BOM is updated with the latest PicketLink version.
-            -->
-            <dependency>
-                <groupId>org.picketlink</groupId>
-                <artifactId>picketlink-api</artifactId>
-                <version>${version.picketlink}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.picketlink</groupId>
-                <artifactId>picketlink-impl</artifactId>
-                <version>${version.picketlink}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.picketlink</groupId>
-                <artifactId>picketlink-idm-simple-schema</artifactId>
-                <version>${version.picketlink}</version>
             </dependency>
 
             <!--
@@ -236,57 +215,39 @@
             <scope>provided</scope>
         </dependency>
         
-        <!-- The PicketLink API provides a set of components and annotations to secure your CDI application. -->
+        <!-- The PicketLink Uber JAR. Provides some basic features from a single JAR. -->
         <dependency>
             <groupId>org.picketlink</groupId>
-            <artifactId>picketlink-api</artifactId>
+            <artifactId>picketlink</artifactId>
             <scope>compile</scope>
         </dependency>
 
-        <!-- The PicketLink Implementation provides a default implementation for the PicketLink API. -->
-        <dependency>
-            <groupId>org.picketlink</groupId>
-            <artifactId>picketlink-impl</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-
-        <!-- The PicketLink IDM Simple Schema provides a default mapping for identity types, relationships, credentials, etc. -->
+        <!-- PicketLink Basic Model JPA Schema. Provides a set of JPA entities mapping the Basic Model. -->
         <dependency>
             <groupId>org.picketlink</groupId>
             <artifactId>picketlink-idm-simple-schema</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-
-        <!-- Deltaspike API. We use compile scope as we need compile against its API -->
-        <dependency>
-            <groupId>org.apache.deltaspike.core</groupId>
-            <artifactId>deltaspike-core-api</artifactId>
-            <scope>compile</scope>
-        </dependency>
-
-        <!-- Deltaspike Impl. we use runtime scope as we need its implementation
-          dependencies only on runtime -->
-        <dependency>
-            <groupId>org.apache.deltaspike.core</groupId>
-            <artifactId>deltaspike-core-impl</artifactId>
-            <scope>runtime</scope>
         </dependency>
 
         <!--
-            Deltaspike Security Module API. This dependency is important to enable authorization to this application using specific
-            annotations. We use compile scope as we need to compile against its API -->
+            Picket JSON Dependency. It provides an API to build JWT and JOSE based tokens. We must define it separately because it depends
+            on JSON-P (JSR-353) which is a JEE7 library. EAP supports JEE6.
+        -->
         <dependency>
-            <groupId>org.apache.deltaspike.modules</groupId>
-            <artifactId>deltaspike-security-module-api</artifactId>
+            <groupId>org.picketlink</groupId>
+            <artifactId>picketlink-json</artifactId>
             <scope>compile</scope>
         </dependency>
 
-        <!-- Deltaspike Security Impl. we use runtime scope as we need its implementation
-          dependencies only on runtime -->
+        <!-- We need to define JSON-P dependencies because we're running the application against a JEE container. -->
         <dependency>
-            <groupId>org.apache.deltaspike.modules</groupId>
-            <artifactId>deltaspike-security-module-impl</artifactId>
-            <scope>runtime</scope>
+            <groupId>org.jboss.spec.javax.json</groupId>
+            <artifactId>jboss-json-api_1.0_spec</artifactId>
+            <version>${version.javax.json}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.json</artifactId>
+            <version>${version.glassfish.javax.json}</version>
         </dependency>
 
         <!-- Now we declare any tools needed -->
@@ -295,6 +256,12 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-jpamodelgen</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.spec.javax.transaction</groupId>
+            <artifactId>jboss-transaction-api_1.1_spec</artifactId>
             <scope>provided</scope>
         </dependency>
 

@@ -14,25 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.quickstarts.wfk.contacts.security.authorization;
-
-import org.apache.deltaspike.security.api.authorization.SecurityBindingType;
-
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+package org.jboss.quickstarts.wfk.contacts.security;
 
 /**
- * <p>This security annotation is used to protected a method and allow only authenticated users.</p>
+ * <p>All roles supported by the application.</p>
  *
- * @author  Pedro Igor
+ * @author Pedro Igor
  */
-@Retention(value = RetentionPolicy.RUNTIME)
-@Target({ ElementType.TYPE, ElementType.METHOD })
-@Documented
-@SecurityBindingType
-public @interface RequiresAccount {
+public interface ApplicationRole {
+
+    /**
+     * <p>Read-only permission.</p>
+     */
+    String USER = "User";
+
+    /**
+     * <p>Create and edit permissions.</p>
+     */
+    String MAINTAINER = "Maintainer";
+
+    /**
+     * <p>Can do anything.</p>
+     */
+    String ADMIN = "Administrator";
 
 }

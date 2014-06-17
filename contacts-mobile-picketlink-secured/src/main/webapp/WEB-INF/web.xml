@@ -18,29 +18,32 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
 
-    <!-- This filter is responsible for providing support for HTTP authentication schemes, such as BASIC, DIGEST,
-    CLIENT_CERT.-->
     <filter>
-        <filter-name>PicketLink Authentication Filter</filter-name>
+        <filter-name>AuthenticationFilter</filter-name>
         <filter-class>org.picketlink.authentication.web.AuthenticationFilter</filter-class>
 
-        <!-- This parameter is required. Here you specify which authentication scheme you want to use. This quickstart
-         uses HTTP Basic. -->
+        <!-- As we're using a token to authenticate users in each request, we need a stateless authentication model. And not use at all session cookies on the server. -->
         <init-param>
-            <param-name>authType</param-name>
-            <param-value>BASIC</param-value>
+            <param-name>statelessAuthentication</param-name>
+            <param-value>true</param-value>
         </init-param>
+	</filter>
 
-        <!-- You can also provide the realm name. If this parameter is not set, defaults to 'PicketLink Default Realm' -->
-        <init-param>
-            <param-name>realmName</param-name>
-            <param-value>JBoss Contacts Mobile App</param-value>
-        </init-param>
-    </filter>
-
+    <!-- Protect RESTful endpoints -->
     <filter-mapping>
-        <filter-name>PicketLink Authentication Filter</filter-name>
-        <url-pattern>/rest/security/user/info</url-pattern>
+        <filter-name>AuthenticationFilter</filter-name>
+        <url-pattern>/rest/private/*</url-pattern>
     </filter-mapping>
+
+    <!-- Force SSL usage -->
+    <security-constraint>
+		<web-resource-collection>
+			<web-resource-name>JaxRsActivator</web-resource-name>
+			<url-pattern>/*</url-pattern>
+		</web-resource-collection>
+		<user-data-constraint>
+			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
+		</user-data-constraint>
+	</security-constraint>
 
 </web-app>

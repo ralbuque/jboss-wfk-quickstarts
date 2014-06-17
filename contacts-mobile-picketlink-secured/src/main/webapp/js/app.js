@@ -22,7 +22,7 @@ CONTACTS.namespace("CONTACTS.app.buildContactDetail");
 CONTACTS.namespace("CONTACTS.app.restEndpoint");
 
 //Set this variable for all Contacts REST APIs base URL.
-CONTACTS.app.restEndpoint = "rest/contacts";
+CONTACTS.app.restEndpoint = "rest/private/contacts";
 
 /**
  * It is recommended to bind to this event instead of DOM ready() because this will work regardless of whether 

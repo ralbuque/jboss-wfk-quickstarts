@@ -35,9 +35,7 @@
       <class>org.picketlink.idm.jpa.model.sample.simple.RelationshipIdentityTypeEntity</class>
       <class>org.picketlink.idm.jpa.model.sample.simple.PartitionTypeEntity</class>
       <class>org.picketlink.idm.jpa.model.sample.simple.PasswordCredentialTypeEntity</class>
-      <class>org.picketlink.idm.jpa.model.sample.simple.DigestCredentialTypeEntity</class>
-      <class>org.picketlink.idm.jpa.model.sample.simple.X509CredentialTypeEntity</class>
-      <class>org.picketlink.idm.jpa.model.sample.simple.OTPCredentialTypeEntity</class>
+      <class>org.picketlink.idm.jpa.model.sample.simple.TokenCredentialTypeEntity</class>
       <class>org.picketlink.idm.jpa.model.sample.simple.AttributeTypeEntity</class>
 
       <properties>
