@@ -47,6 +47,9 @@ import static org.picketlink.idm.model.basic.BasicModel.grantRole;
  * in your application. In this case, we just create some default users, roles and how they relate with each other in other to
  * demonstrate some security features.</p>
  *
+ * <p>During initialization, the default partition is initialized with a public and private keys. This is necessary to
+ * issue and sign tokens.</p>
+ *
  * @author Pedro Igor
  */
 @Startup
@@ -57,7 +60,7 @@ public class SecurityInitializer {
 
     private KeyStore keyStore;
 
-    public void configureDefaultPartition(@Observes PartitionManagerCreateEvent event) {
+    public void initialize(@Observes PartitionManagerCreateEvent event) {
         PartitionManager partitionManager = event.getPartitionManager();
 
         createDefaultPartition(partitionManager);

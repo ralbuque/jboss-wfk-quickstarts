@@ -43,6 +43,8 @@ import java.util.List;
 import java.util.UUID;
 
 /**
+ * <p>A {@link org.picketlink.idm.credential.Token.Provider} to manage JSON Web Signature tokens.</p>
+ *
  * @author Pedro Igor
  */
 @ApplicationScoped
