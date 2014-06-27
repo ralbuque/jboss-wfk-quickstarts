@@ -131,7 +131,7 @@ public class ContactRESTService {
      */
     @SuppressWarnings("unused")
     @POST
-    @RolesAllowed(ApplicationRole.MAINTAINER)
+    @RolesAllowed({ApplicationRole.MAINTAINER, ApplicationRole.ADMIN})
     public Response createContact(Contact contact) {
         log.info("createContact started. Contact = " + contact.getFirstName() + " " + contact.getLastName() + " " + contact.getEmail() + " " + contact.getPhoneNumber() + " "
             + contact.getBirthDate() + " " + contact.getId());
@@ -179,7 +179,7 @@ public class ContactRESTService {
      * @return Response
      */
     @PUT
-    @RolesAllowed(ApplicationRole.MAINTAINER)
+    @RolesAllowed({ApplicationRole.MAINTAINER, ApplicationRole.ADMIN})
     @Path("/{id:[0-9][0-9]*}")
     public Response updateContact(@PathParam("id") long id, Contact contact) {
         if (contact == null) {
