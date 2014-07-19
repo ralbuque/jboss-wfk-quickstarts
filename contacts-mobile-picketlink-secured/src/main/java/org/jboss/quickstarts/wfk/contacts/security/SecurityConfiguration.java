@@ -21,22 +21,20 @@
  */
 package org.jboss.quickstarts.wfk.contacts.security;
 
-import org.jboss.quickstarts.wfk.contacts.security.authentication.JWSTokenProvider;
+import org.jboss.quickstarts.wfk.contacts.security.authentication.KeyCloakTokenProvider;
+import org.jboss.quickstarts.wfk.contacts.security.store.TokenIdentityStoreConfiguration;
+import org.jboss.quickstarts.wfk.contacts.security.store.TokenIdentityStoreConfigurationBuilder;
 import org.picketlink.annotations.PicketLink;
 import org.picketlink.authentication.web.TokenAuthenticationScheme;
 import org.picketlink.config.SecurityConfigurationBuilder;
 import org.picketlink.event.SecurityConfigurationEvent;
+import org.picketlink.idm.PartitionManager;
+import org.picketlink.idm.config.IdentityConfigurationBuilder;
 import org.picketlink.idm.credential.handler.TokenCredentialHandler;
-import org.picketlink.idm.jpa.model.sample.simple.AccountTypeEntity;
-import org.picketlink.idm.jpa.model.sample.simple.AttributeTypeEntity;
-import org.picketlink.idm.jpa.model.sample.simple.GroupTypeEntity;
-import org.picketlink.idm.jpa.model.sample.simple.IdentityTypeEntity;
-import org.picketlink.idm.jpa.model.sample.simple.PartitionTypeEntity;
-import org.picketlink.idm.jpa.model.sample.simple.PasswordCredentialTypeEntity;
-import org.picketlink.idm.jpa.model.sample.simple.RelationshipIdentityTypeEntity;
-import org.picketlink.idm.jpa.model.sample.simple.RelationshipTypeEntity;
-import org.picketlink.idm.jpa.model.sample.simple.RoleTypeEntity;
-import org.picketlink.idm.jpa.model.sample.simple.TokenCredentialTypeEntity;
+import org.picketlink.idm.internal.DefaultPartitionManager;
+import org.picketlink.idm.model.basic.Grant;
+import org.picketlink.idm.model.basic.Role;
+import org.picketlink.idm.model.basic.User;
 import org.picketlink.internal.EEJPAContextInitializer;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -53,7 +51,7 @@ import javax.inject.Inject;
 public class SecurityConfiguration {
 
     @Inject
-    private JWSTokenProvider tokenProvider;
+    private KeyCloakTokenProvider tokenProvider;
 
     @Inject
     private EEJPAContextInitializer contextInitializer;
@@ -72,24 +70,25 @@ public class SecurityConfiguration {
 
         builder
             .identity()
-            .   stateless()
-            .idmConfig()
-                .named("default.config")
-                    .stores()
-                        .jpa()
-                            .mappedEntity(
-                                PartitionTypeEntity.class,
-                                RoleTypeEntity.class,
-                                GroupTypeEntity.class,
-                                IdentityTypeEntity.class,
-                                RelationshipTypeEntity.class,
-                                RelationshipIdentityTypeEntity.class,
-                                PasswordCredentialTypeEntity.class,
-                                TokenCredentialTypeEntity.class,
-                                AttributeTypeEntity.class,
-                                AccountTypeEntity.class)
-                            .addContextInitializer(this.contextInitializer)
-                            .setCredentialHandlerProperty(TokenCredentialHandler.TOKEN_PROVIDER, this.tokenProvider)
-                            .supportAllFeatures();
+            .stateless();
+    }
+
+    @Produces
+    @PicketLink
+    public PartitionManager producePartitionManager() {
+        IdentityConfigurationBuilder builder = new IdentityConfigurationBuilder();
+
+        builder
+            .named("default.config")
+                .stores()
+                    .add(TokenIdentityStoreConfiguration.class, TokenIdentityStoreConfigurationBuilder.class)
+                        .setCredentialHandlerProperty(TokenCredentialHandler.TOKEN_PROVIDER, this.tokenProvider)
+                        .supportType(User.class, Role.class)
+                        .supportGlobalRelationship(Grant.class)
+                        .supportCredentials(true)
+                        .supportPermissions(false)
+                        .supportAttributes(false);
+
+        return new DefaultPartitionManager(builder.buildAll());
     }
 }

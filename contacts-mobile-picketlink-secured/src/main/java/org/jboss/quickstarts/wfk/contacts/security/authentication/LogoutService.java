@@ -39,7 +39,7 @@ import javax.ws.rs.Path;
 public class LogoutService {
 
     @Inject
-    private JWSTokenProvider tokenProvider;
+    private KeyCloakTokenProvider tokenProvider;
 
     @Inject
     private Identity identity;

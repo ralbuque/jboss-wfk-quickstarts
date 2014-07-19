@@ -53,7 +53,7 @@
         <version.jboss.bom.wfk>2.6.0-build-1</version.jboss.bom.wfk>
 
         <!-- Define the version of the PicketLink BOM -->
-        <version.picketlink>2.6.0.Final</version.picketlink>
+        <version.picketlink>2.7.0-SNAPSHOT</version.picketlink>
 
         <!-- JSON-P Dependencies -->
         <version.javax.json>1.0.0.Final</version.javax.json>

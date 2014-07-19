@@ -48,6 +48,25 @@ $( document ).ready(function() {
             }
         }
     });
+
+    var keycloak = Keycloak('keycloak.json');
+
+    var loadData = function () {
+        if (keycloak.idToken) {
+            securityService.initSession(keycloak.token);
+        }
+    };
+
+    var reloadData = function () {
+        keycloak.updateToken(10)
+            .success(loadData)
+            .error(function() {
+                alert('Error KeyCloak.');
+            });
+    }
+
+    keycloak.init({ onLoad: 'login-required' }).success(reloadData);
+
 });
 
 /**
@@ -466,12 +485,12 @@ $(document).ready(function() {
     };
 
     var SecurityService = function() {
-        this.initSession = function(response) {
+        this.initSession = function(token) {
             console.log("[INFO] Initializing user session.");
-            console.log("[INFO] Token is :" + response.authctoken);
+            console.log("[INFO] Token is :" + token);
             console.log("[INFO] Token Stored in session storage.");
             // persist token, user id to the storage
-            sessionStorage.setItem('token', response.authctoken);
+            sessionStorage.setItem('token', token);
         };
 
         this.endSession = function() {
