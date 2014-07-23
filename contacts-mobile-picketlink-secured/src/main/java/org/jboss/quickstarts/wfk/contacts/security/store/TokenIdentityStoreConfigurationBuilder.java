@@ -24,11 +24,16 @@ package org.jboss.quickstarts.wfk.contacts.security.store;
 import org.picketlink.idm.config.IdentityStoreConfigurationBuilder;
 import org.picketlink.idm.config.IdentityStoresConfigurationBuilder;
 import org.picketlink.idm.config.SecurityConfigurationException;
+import org.picketlink.idm.credential.Token;
+import org.picketlink.idm.credential.handler.TokenCredentialHandler;
 
 /**
  * @author Pedro Igor
  */
 public class TokenIdentityStoreConfigurationBuilder extends IdentityStoreConfigurationBuilder<TokenIdentityStoreConfiguration, TokenIdentityStoreConfigurationBuilder> {
+
+    private IdentityExtractor identityExtractor;
+    private Token.Provider tokenProvider;
 
     public TokenIdentityStoreConfigurationBuilder(IdentityStoresConfigurationBuilder builder) {
         super(builder);
@@ -37,6 +42,8 @@ public class TokenIdentityStoreConfigurationBuilder extends IdentityStoreConfigu
     @Override
     protected TokenIdentityStoreConfiguration create() throws SecurityConfigurationException {
         return new TokenIdentityStoreConfiguration(
+            this.tokenProvider,
+            this.identityExtractor,
             getSupportedTypes(),
             getUnsupportedTypes(),
             getContextInitializers(),
@@ -46,5 +53,29 @@ public class TokenIdentityStoreConfigurationBuilder extends IdentityStoreConfigu
             isSupportCredentials(),
             isSupportPermissions()
         );
+    }
+
+    public TokenIdentityStoreConfigurationBuilder identityExtractor(IdentityExtractor identityExtractor) {
+        this.identityExtractor = identityExtractor;
+        return this;
+    }
+
+    public TokenIdentityStoreConfigurationBuilder tokenProvider(Token.Provider tokenProvider) {
+        this.tokenProvider = tokenProvider;
+        setCredentialHandlerProperty(TokenCredentialHandler.TOKEN_PROVIDER, this.tokenProvider);
+        return this;
+    }
+
+    @Override
+    protected void validate() {
+        super.validate();
+
+        if (this.identityExtractor == null) {
+            throw new SecurityConfigurationException("You must provide an " + IdentityExtractor.class + ".");
+        }
+
+        if (this.tokenProvider == null) {
+            throw new SecurityConfigurationException("You must provide a " + Token.Provider.class + ".");
+        }
     }
 }

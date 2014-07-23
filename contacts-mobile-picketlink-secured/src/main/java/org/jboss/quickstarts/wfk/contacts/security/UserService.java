@@ -22,8 +22,6 @@ import org.picketlink.idm.IdentityManager;
 import org.picketlink.idm.RelationshipManager;
 import org.picketlink.idm.model.Account;
 import org.picketlink.idm.model.basic.Role;
-import org.picketlink.idm.model.basic.User;
-import org.picketlink.idm.query.IdentityQuery;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -32,8 +30,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.picketlink.idm.model.basic.BasicModel.getRole;
 import static org.picketlink.idm.model.basic.BasicModel.hasRole;
@@ -76,29 +72,6 @@ public class UserService {
         AuthenticatedUser authenticatedUser = new AuthenticatedUser(authenticatedAccount, isAdmin);
 
         return Response.ok().entity(authenticatedUser).build();
-    }
-
-    /**
-     * <p>Create a list of all users.</p>
-     * 
-     * @return Response - 200 (OK) with a list of all the Users
-     */
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @LoggedIn
-    public Response getAll() {
-        IdentityQuery<User> query = this.identityManager.createIdentityQuery(User.class);
-        List<User> result = query.getResultList();
-        User currentUser = (User) this.identity.getAccount();
-
-        // Strip off the current user or Admin from the total list.
-        for (User user : new ArrayList<User>(result)) {
-            if ("admin".equals(user.getLoginName()) || currentUser.getLoginName().equals(user.getLoginName())) {
-                result.remove(user);
-            }
-        }
-
-        return Response.ok().entity(result).build();
     }
 
     /**

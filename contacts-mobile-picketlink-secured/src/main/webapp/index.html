@@ -84,7 +84,6 @@
             <ul data-role="listview" id="contacts-list-page-menu-panel-listview">
                 <li><a href="#contacts-add-page">Add Contact</a></li>
                 <li><a href="#contacts-detail-list-page">Detailed List</a></li>
-                <li class="role-assignment-menu"><a href="#role-assignment-page">Role Assignment</a></li>
                 <li><a href="#contacts-theming-dialog" data-rel="popup" data-position-to="window">Themes</a></li>
                 <li><a href="#about-page">About</a></li>
                 <li><a class="security-logout-btn">Logout</a></li>
@@ -125,7 +124,6 @@
             <ul data-role="listview" id="contacts-detail-list-page-menu-panel-listview">
                 <li><a href="#contacts-add-page">Add Contact</a></li>
                 <li><a href="#contacts-list-page">List view</a></li>
-                <li class="role-assignment-menu"><a href="#role-assignment-page">Role Assignment</a></li>
                 <li><a href="#about-page">About</a></li>
                 <li><a class="security-logout-btn">Logout</a></li>
             </ul>
@@ -322,117 +320,6 @@
                 <a id="confirm-delete-button" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b">Yes</a>
                 <a href="#contacts-list-page" id="cancel-delete-button" class="ui-btn ui-corner-all ui-shadow ui-btn-inline">No</a>
             </div>
-        </div>
-    </div>
-    
-    <!-- Log in page. -->
-    <div data-role="page" id="signin-page" class="ui-page-theme-a" >
-        <div data-role="header" data-position="fixed" >
-            <h1>Welcome to JBoss Contacts Mobile Application</h1>
-        </div>
-        <div role="main" class="ui-content">
-            <form name="signin-form" id="signin-form" class="contact_info" method="post" data-ajax="false">
-                <div>
-                    <label for="signin-form-input-email">User Name:</label>
-                    <input name="loginName" id="signin-form-input-email" class="userName" data-clear-btn="true" value="" placeholder="Enter your user name." type="text"/>
-                </div>
-                <div>
-                    <label for="signin-form-input-password">Password:</label>
-                    <input name="password" id="signin-form-input-password" class="name" data-clear-btn="true" value="" placeholder="Enter your password." type="password"/>
-                </div>
-                <input id="submit-signin-btn" data-inline="true" type="submit" value="Sign In" />
-                <a href="#signup-page" id="submit-go-signup-btn" class="ui-btn ui-corner-all ui-shadow ui-btn-inline">Sign Up</a>
-            </form>
-        </div>
-    </div>
-
-    <!-- This is for the signup page. -->
-    <div data-role="page" id="signup-page" class="ui-page-theme-a" >
-        <div data-role="header" data-position="fixed" >
-            <h1>Sign Up</h1>
-        </div>
-        <div role="main" class="ui-content">
-            <form name="signup-form" id="signup-form" class="contact_info" method="post" data-ajax="false">
-                <div>
-                    <label for="signup-form-input-firstName">First Name:</label>
-                    <input name="firstName" id="signup-form-input-firstName" class="name" data-clear-btn="true" value="" placeholder="Enter a first name." type="text"/>
-                </div>
-                <div>
-                    <label for="signup-form-input-lastName">Last Name:</label>
-                    <input name="lastName" id="signup-form-input-lastName" class="name" data-clear-btn="true" value="" placeholder="Enter a last name." type="text"/>
-                </div>
-                <div>
-                    <label for="signup-form-input-userName">User Name:</label>
-                    <input name="userName" id="signup-form-input-userName" class="userName" data-clear-btn="true" value="" placeholder="Enter Your User Name" type="text"/>
-                </div>
-                <div>
-                    <label for="signup-form-input-password">Password:</label>
-                    <input name="password" id="signup-form-input-password" class="name" data-clear-btn="true" value="" placeholder="Enter Your Password" type="password"/>
-                </div>
-                <input id="submit-signup-btn" data-inline="true" type="submit" value="Save" />
-                <input id="clear-signup-btn" data-inline="true" type="reset" value="Clear"  />
-                <input id="cancel-signup-btn" data-inline="true" type="reset" value="Cancel"  />
-            </form>
-        </div>
-        <div data-role="footer" data-position="fixed" >
-            <fieldset class="ui-grid-b">
-                <!-- There is currently a bug in jQM 1.4.2. The CSS forces all ui-btn in a toolbar(header or footer) to be
-                     set to display:inline-block.  This interferes with the Grid making the buttons appear normal sized. 
-                     To fix this we had to override the style with a 'block-button' class referenced in app.css, this 
-                     should be removed when the bug is fixed.-->
-                <div class="ui-block-a">
-                    <a class="ui-btn ui-corner-all ui-shadow ui-btn-b block-button" onclick="$('#submit-signup-btn').trigger('click');">Save</a>
-                </div>
-                <div class="ui-block-b">
-                    <a class="ui-btn ui-corner-all ui-shadow block-button" onclick="$('#clear-signup-btn').trigger('click');">Clear</a>
-                </div>
-                <div class="ui-block-c">
-                    <a href="#contacts-list-page" class="ui-btn ui-corner-all ui-shadow block-button" onclick="$('#cancel-signup-btn').trigger('click');">Cancel</a>
-                </div>
-            </fieldset>             
-        </div>
-        </div>
-    </div>
-
-    <!-- This is for the role assignment page. -->
-    <div data-role="page" id="role-assignment-page" class="ui-page-theme-a" >
-        <div data-role="panel" id="role-assignment-page-menu-panel">
-            <ul data-role="listview" id="role-assignment-page-menu-panel-listview">
-                <li><a href="#contacts-add-page">Add Contact</a></li>
-                <li><a href="#contacts-list-page">List view</a></li>
-                <li><a href="#about-page">About</a></li>
-                <li><a class="security-logout-btn">Logout</a></li>
-            </ul>
-        </div>
-        <div data-role="header" data-position="fixed" >
-            <a href="#role-assignment-page-menu-panel" id="role-assignment-page-menu-button" class="ui-btn ui-corner-all ui-shadow ui-icon-bars ui-btn-icon-notext ui-mini ui-btn-inline">Menu</a>
-            <h1>Role Assignment</h1>
-            <a href="#contacts-list-page" id="contacts-list-role-assignment-page-button" class="ui-btn ui-corner-all ui-shadow ui-icon-arrow-d ui-btn-icon-right ui-mini ui-btn-inline">List</a>
-        </div>
-        <div role="main" class="ui-content">
-            <form name="role-assignment-form" id="role-assignment-form" class="contact_info" method="post" data-ajax="false">
-                <label for="role-assignment-users-select">Select an User:</label>
-                <select id="role-assignment-users-select" name="userName" data-native-menu="false">
-                    <option>No Selection</option>
-                </select>
-                <label for="role-assignment-role-select">Assign a Role:</label>
-                <select id="role-assignment-role-select" name="roleName" data-native-menu="false">
-                    <option>No Selection</option>
-                </select>
-                <input id="submit-role-assignment-btn" data-inline="true" type="submit" value="Assign" />
-            </form>
-        </div>
-    </div>
-
-    <!-- A role assignment dialog. -->
-    <div data-role="page" data-dialog="true" id="role-assignment-popup" class="ui-page-theme-a" >
-        <div data-role="header">
-            <h1>Role Assignment</h1>
-        </div>
-        <div data-role="content">
-            <h3>Role successfuly assigned.</h3>
-            <a href="#contacts-list-page" id="role-assignment-popup-ok-btn" class="ui-btn ui-corner-all ui-shadow ui-btn-inline">Ok</a>
-            <a href="#role-assignment-page" id="role-assignment-popup-more-roles-btn" class="ui-btn ui-corner-all ui-shadow ui-btn-inline">Assign more roles</a>
         </div>
     </div>
 </body>

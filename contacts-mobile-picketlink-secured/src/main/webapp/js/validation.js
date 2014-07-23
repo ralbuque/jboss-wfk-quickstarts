@@ -25,7 +25,6 @@ CONTACTS.namespace("CONTACTS.validation.addContactsFormValidator");
 CONTACTS.namespace("CONTACTS.validation.editContactsFormValidator");
 CONTACTS.namespace("CONTACTS.validation.signUpFormValidator");
 CONTACTS.namespace("CONTACTS.validation.signInFormValidator");
-CONTACTS.namespace("CONTACTS.validation.assignRoleFormValidator");
 
 /**
  * jQuery Mobile and moblie devices do not currently support HTML5 form validation.  Therefore, basic things like 
@@ -278,98 +277,6 @@ $(document).ready(function() {
                     required: "Please enter a valid birthdate.",
                     max: "Birthdates can not be in the future. Please choose one from the past. Unless they are a time traveler.",
                     min: "Nobody is that old. Unless they are a vampire."
-                }
-            }
-        });
-
-        /**
-         * Set up the validator for the "signup" form.
-         * NOTE: I tried setting it up to use the form class but then it only applied the validation to the first form.
-         *       It appears that the plugin only works when it is givin only 1 form at a time.
-         */
-        CONTACTS.validation.signUpFormValidator = $("#signup-form").validate({
-            rules: {
-                firstName: {
-                    required: true,
-                    // This is the custom validator created above to make sure that the String only has letter, -, or '.
-                    personName: true,
-                    maxlength: 25
-                },
-                lastName: {
-                    required: true,
-                    // This is the custom validator created above to make sure that the String only has letter, -, or '.
-                    personName: true,
-                    maxlength: 25
-                },
-                userName: {
-                    required: true,
-                    // This is the custom validator created above to make sure that the userName is not already being used.
-                    userNameUnique: true
-                },
-                password: {
-                    required: true
-                }
-            },
-            messages: {
-                firstName: {
-                    required: "Please specify a first name."
-                },
-                lastName: {
-                    required: "Please specify a last name."
-                },
-                userName: {
-                    required: "Please enter a userName."
-                },
-                password: {
-                    required: "Please enter a password."
-                }
-            }
-        });
-
-        /**
-         * Set up the validator for the "signin" form.
-         * NOTE: I tried setting it up to use the form class but then it only applied the validation to the first form.
-         *       It appears that the plugin only works when it is givin only 1 form at a time.
-         */
-        CONTACTS.validation.signInFormValidator = $("#signin-form").validate({
-            rules: {
-                loginName: {
-                    required: true
-                },
-                password: {
-                    required: true
-                }
-            },
-            messages: {
-                loginName: {
-                    required: "Please enter an user name."
-                },
-                password: {
-                    required: "Please enter a password."
-                }
-            }
-        });
-
-        /**
-         * Set up the validator for the "signin" form.
-         * NOTE: I tried setting it up to use the form class but then it only applied the validation to the first form.
-         *       It appears that the plugin only works when it is givin only 1 form at a time.
-         */
-        CONTACTS.validation.assignRoleFormValidator = $("#role-assignment-form").validate({
-            rules: {
-                userName: {
-                    required: true
-                },
-                roleName: {
-                    required: true
-                }
-            },
-            messages: {
-                userName: {
-                    required: "Please select an user."
-                },
-                roleName: {
-                    required: "Please select a role.."
                 }
             }
         });

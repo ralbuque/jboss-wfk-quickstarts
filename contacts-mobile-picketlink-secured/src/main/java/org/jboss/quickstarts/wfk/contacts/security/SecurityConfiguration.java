@@ -22,16 +22,14 @@
 package org.jboss.quickstarts.wfk.contacts.security;
 
 import org.jboss.quickstarts.wfk.contacts.security.authentication.KeyCloakTokenProvider;
+import org.jboss.quickstarts.wfk.contacts.security.store.IdentityContextInitializer;
+import org.jboss.quickstarts.wfk.contacts.security.store.KeyCloakTokenIdentityExtractor;
 import org.jboss.quickstarts.wfk.contacts.security.store.TokenIdentityStoreConfiguration;
 import org.jboss.quickstarts.wfk.contacts.security.store.TokenIdentityStoreConfigurationBuilder;
 import org.picketlink.annotations.PicketLink;
 import org.picketlink.authentication.web.TokenAuthenticationScheme;
 import org.picketlink.config.SecurityConfigurationBuilder;
 import org.picketlink.event.SecurityConfigurationEvent;
-import org.picketlink.idm.PartitionManager;
-import org.picketlink.idm.config.IdentityConfigurationBuilder;
-import org.picketlink.idm.credential.handler.TokenCredentialHandler;
-import org.picketlink.idm.internal.DefaultPartitionManager;
 import org.picketlink.idm.model.basic.Grant;
 import org.picketlink.idm.model.basic.Role;
 import org.picketlink.idm.model.basic.User;
@@ -54,10 +52,16 @@ public class SecurityConfiguration {
     private KeyCloakTokenProvider tokenProvider;
 
     @Inject
+    private KeyCloakTokenIdentityExtractor tokenIdentityExtractor;
+
+    @Inject
     private EEJPAContextInitializer contextInitializer;
 
     @Inject
     private TokenAuthenticationScheme tokenAuthenticationScheme;
+
+    @Inject
+    private IdentityContextInitializer identityContextInitializer;
 
     @Produces
     @PicketLink
@@ -70,25 +74,18 @@ public class SecurityConfiguration {
 
         builder
             .identity()
-            .stateless();
-    }
-
-    @Produces
-    @PicketLink
-    public PartitionManager producePartitionManager() {
-        IdentityConfigurationBuilder builder = new IdentityConfigurationBuilder();
-
-        builder
-            .named("default.config")
-                .stores()
-                    .add(TokenIdentityStoreConfiguration.class, TokenIdentityStoreConfigurationBuilder.class)
-                        .setCredentialHandlerProperty(TokenCredentialHandler.TOKEN_PROVIDER, this.tokenProvider)
-                        .supportType(User.class, Role.class)
-                        .supportGlobalRelationship(Grant.class)
-                        .supportCredentials(true)
-                        .supportPermissions(false)
-                        .supportAttributes(false);
-
-        return new DefaultPartitionManager(builder.buildAll());
+                .stateless()
+            .idmConfig()
+                .named("default.config")
+                    .stores()
+                        .add(TokenIdentityStoreConfiguration.class, TokenIdentityStoreConfigurationBuilder.class)
+                            .identityExtractor(this.tokenIdentityExtractor)
+                            .tokenProvider(this.tokenProvider)
+                            .addContextInitializer(this.identityContextInitializer)
+                            .supportType(User.class, Role.class)
+                            .supportGlobalRelationship(Grant.class)
+                            .supportCredentials(true)
+                            .supportPermissions(false)
+                            .supportAttributes(false);
     }
 }

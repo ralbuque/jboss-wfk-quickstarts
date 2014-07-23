@@ -21,7 +21,9 @@
  */
 package org.jboss.quickstarts.wfk.contacts.security.authentication;
 
-import org.picketlink.json.jwt.JWT;
+import org.picketlink.idm.credential.Token;
+import org.picketlink.json.jose.JWS;
+import org.picketlink.json.jose.JWSBuilder;
 
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -30,27 +32,25 @@ import javax.json.JsonValue;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
 /**
  * @author Pedro Igor
  */
-public class KeyCloakJWT extends JWT {
+public class KeyCloakToken extends Token {
 
-    /**
-     * <p> Creates a new instance using the claims set and values from the given {@link javax.json.JsonObject}. </p>
-     *
-     * @param headers
-     * @param claims The claims set and their respective values.
-     */
-    protected KeyCloakJWT(JsonObject headers, JsonObject claims) {
-        super(headers, claims);
+    private final JWS jws;
+
+    public KeyCloakToken(String encodedToken) {
+        super(encodedToken);
+        this.jws = new JWSBuilder().build(encodedToken);
     }
 
     public List<String> getRoles() {
         List<String> roles = new ArrayList<String>();
-        JsonObject resourceAccess = getClaims().getJsonObject("resource_access");
+        JsonObject resourceAccess = this.jws.getClaims().getJsonObject("resource_access");
         Collection<JsonValue> resources = resourceAccess.values();
         Iterator<JsonValue> resourcesIterator = resources.iterator();
 
@@ -70,6 +70,22 @@ public class KeyCloakJWT extends JWT {
     }
 
     public String getUserName() {
-        return getClaim("preferred_username");
+        return this.jws.getClaim("preferred_username");
+    }
+
+    public List<String> getGroups() {
+        return Collections.emptyList();
+    }
+
+    public Date getExpiration() {
+        return this.jws.getExpirationDate();
+    }
+
+    public String getUserId() {
+        return this.jws.getSubject();
+    }
+
+    public String getRealm() {
+        return this.jws.getIssuer();
     }
 }

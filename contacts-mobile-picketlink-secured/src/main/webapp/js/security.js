@@ -17,8 +17,6 @@
 
 CONTACTS.namespace("CONTACTS.security.currentUser");
 CONTACTS.namespace("CONTACTS.security.loadCurrentUser");
-CONTACTS.namespace("CONTACTS.security.submitSignIn");
-CONTACTS.namespace("CONTACTS.security.submitSignUp");
 CONTACTS.namespace("CONTACTS.security.restSecurityEndpoint");
 
 // Set this to undefined so that when the user is not logged in system doesn't think they are. This is referenced in 
@@ -30,135 +28,6 @@ CONTACTS.security.restSecurityEndpoint = "rest/private/security/";
 
 var securityService;
 
-$( document ).ready(function() {
-    $.ajaxSetup({
-        beforeSend: function(xhr, settings) {
-            securityService.secureRequest(xhr);
-        },
-        error: function (x, e) {
-            if (x.status === 401) {
-                console.log("[INFO] Unauthorized response.");
-                securityService.endSession();
-            } else if (x.status == 400) {
-                console.log("[ERROR] Bad request response from the server.");
-            } else if (x.status == 500) {
-                console.log("[ERROR] Internal server error.");
-            } else {
-                console.log("[ERROR] Unexpected error from server.");
-            }
-        }
-    });
-
-    var keycloak = Keycloak('keycloak.json');
-
-    var loadData = function () {
-        if (keycloak.idToken) {
-            securityService.initSession(keycloak.token);
-        }
-    };
-
-    var reloadData = function () {
-        keycloak.updateToken(10)
-            .success(loadData)
-            .error(function() {
-                alert('Error KeyCloak.');
-            });
-    }
-
-    keycloak.init({ onLoad: 'login-required' }).success(reloadData);
-
-});
-
-/**
- * It is recommended to bind to this event instead of DOM ready() because this will work regardless of whether 
- * the page is loaded directly or if the content is pulled into another page as part of the Ajax navigation system.
- * 
- * The first thing you learn in jQuery is to call code inside the $(document).ready() function so everything 
- * will execute as soon as the DOM is loaded. However, in jQuery Mobile, Ajax is used to load the contents of 
- * each page into the DOM as you navigate, and the DOM ready handler only executes for the first page. 
- * To execute code whenever a new page is loaded and created, you can bind to the pagecreate event. 
- * 
- * 
- * These functions perform the Log out and Role Assignments.
- * 
- * @author Pedro Igor, Joshua Wilson
- */
-$( document ).on( "pagecreate", function(mainEvent) {
-    //Initialize the vars in the beginning so that you will always have access to them.
-    var getCurrentTime = CONTACTS.util.getCurrentTime,
-        restSecurityEndpoint = CONTACTS.security.restSecurityEndpoint;
-
-    /* 
-     * The "pagebeforeshow" event will delay this function until everything is set up.
-     * 
-     * Because of the interesting jQM loading architecture, multiple event triggering is a constant problem. 
-     * The "e.handled" if statement used here and elsewhere is meant to keep jQM from running this code multiple 
-     * times for one display. 
-     */
-    // Role Assignment
-    $("#role-assignment-page").on( "pagebeforeshow", function(e) {
-        if(e.handled !== true) {
-            console.log(getCurrentTime() + " [js/security.js] (#role-assignment-page -> on pagebeforeshow) - start");
-            
-            // Reset the text of the default display.
-            $("#role-assignment-users-select")
-                .find("option")
-                .remove()
-                .end()
-                .append("<option>Select a user</option>")
-                .val("");
-//            $("#role-assignment-form option").remove().append("<option>Select a user</option>").val("");
-            
-            // Get the list of Users and add them to the selection list.
-            $.ajax({
-                url: restSecurityEndpoint + "user",
-                cache: false,
-                type: "GET"
-            }).done(function(data, textStatus, jqXHR) {
-                $.each(data, function(index, user) {
-                    $("<option>").attr({"value":user.loginName}).html(user.loginName).appendTo("#role-assignment-users-select");
-                });
-                $("#role-assignment-users-select").selectmenu("refresh");
-            }).fail(function(jqXHR, textStatus, errorThrown) {
-                console.log(getCurrentTime() + " [js/security.js] (#role-assignment-page -> on pagebeforeshow) - restListUsersEndpoint - Could not query users" +
-                    " - jqXHR = " + jqXHR.status +
-                    ", textStatus = " + textStatus +
-                    ", errorThrown = " + errorThrown +
-                    ", responseText = " + jqXHR.responseText);
-            });
-
-            // Reset the text of the default display.
-            $("#role-assignment-role-select")
-                .find("option")
-                .remove()
-                .end()
-                .append("<option>Select a role</option>")
-                .val("");
-            
-            // Get the list of Roles and add them to the selection list.
-            $.ajax({
-                url: restSecurityEndpoint + "role",
-                cache: false,
-                type: "GET"
-            }).done(function(data, textStatus, jqXHR) {
-                $.each(data, function(index, role) {
-                    $("<option>").attr({"value":role}).html(role).appendTo("#role-assignment-role-select");
-                });
-                $("#role-assignment-role-select").selectmenu("refresh");
-            }).fail(function(jqXHR, textStatus, errorThrown) {
-                console.log(getCurrentTime() + " [js/security.js] (#role-assignment-page -> on pagebeforeshow) - restListRolesEndpoint - Could not query users" +
-                        " - jqXHR = " + jqXHR.status +
-                        ", textStatus = " + textStatus +
-                        ", errorThrown = " + errorThrown +
-                        ", responseText = " + jqXHR.responseText);
-            });
-            
-            e.handled = true;
-            console.log(getCurrentTime() + " [js/security.js] (#role-assignment-page -> on pagebeforeshow) - end");
-        }
-    });
-});
-
 /**
  * The regural jQuery AJAX functions go here.  We do all the jQuery Mobile security work in the section above this.
  * 
@@ -169,30 +38,86 @@ $(document).ready(function() {
     var getCurrentTime = CONTACTS.util.getCurrentTime,
         restSecurityEndpoint = CONTACTS.security.restSecurityEndpoint;
 
+    var keycloak = Keycloak('keycloak.json');
+
+    var updateToken = function (callback) {
+        keycloak.updateToken(10)
+            .success(function() {
+                if (keycloak.idToken) {
+                    console.log("[INFO] Updating token.");
+                    securityService.endSession();
+                    securityService.initSession(keycloak.token);
+                    console.log("[INFO] Token updated.");
+
+                    if (callback) {
+                        callback();
+                    }
+                }
+            })
+            .error(function() {
+                console.log("[ERROR] KeyCloak Error.");
+            });
+    }
+
+    keycloak.init({ onLoad: 'login-required' }).success(updateToken);
+
     /**
-     * Register a handler to be called when Ajax requests complete with an error. Whenever an Ajax request completes 
-     * with an error, jQuery triggers the ajaxError event. Any and all handlers that have been registered with the 
-     * .ajaxError() method are executed at this time. Note: This handler is not called for cross-domain script and 
+     * Register a handler to be called when Ajax requests complete with an error. Whenever an Ajax request completes
+     * with an error, jQuery triggers the ajaxError event. Any and all handlers that have been registered with the
+     * .ajaxError() method are executed at this time. Note: This handler is not called for cross-domain script and
      * cross-domain JSONP requests. - from the jQuery docs
-     * 
+     *
      * This will be overridden by any ajax call that handles these errors it's self.
      */
-    $(document).ajaxError(function( event, jqXHR, settings, errorThrown ) {
-        // Whenever there is an AJAX event the authentication and authorization is verified. If the user is denied, then
-        // the system will return an error instead of data. This is a "universal" error catcher for those denials.
-        if (jqXHR.status == 403) {
-            // Authorization denied. (Does not have permissions)
-//            $("body").pagecontainer("change", "#access-denied-dialog", { transition: "pop" });
-            console.log(getCurrentTime() + " [js/security.js] (document.ajaxError) - error in ajax" +
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            securityService.secureRequest(xhr);
+        },
+        error: function( jqXHR, errorThrown ) {
+            if (jqXHR.status == 400) {
+                console.log("[ERROR] Bad request response from the server.");
+            } else if (jqXHR.status == 403) {
+                // Authorization denied. (Does not have permissions)
+                console.log(getCurrentTime() + " [js/security.js] (document.ajaxError) - error in ajax" +
                     " - jqXHR = " + jqXHR.status +
                     ", errorThrown = " + errorThrown);
-        } else if (jqXHR.status == 401) {
-            // Authentication denied. (Not logged in)
-            $("body").pagecontainer("change", "#signin-page");
-            console.log(getCurrentTime() + " [js/security.js] (document.ajaxError) - error in ajax" +
-                    " - jqXHR = " + jqXHR.status +
-                    ", errorThrown = " + errorThrown);
+            } else if (jqXHR.status == 500) {
+                console.log("[ERROR] Internal server error.");
+            } else {
+                console.log("[ERROR] Unexpected error from server.");
+            }
         }
+    });
+
+    $.ajaxPrefilter(function( opts, originalOptions, jqXHR ) {
+        // you could pass this option in on a "retry" so that it doesn't
+        // get all recursive on you.
+        if ( opts.retryAttempt ) {
+            console.log("Not filtering retry request.");
+            return;
+        }
+
+        var dfd = $.Deferred();
+
+        // if the request works, return normally
+        jqXHR.done(dfd.resolve);
+
+        // if the request fails, do something else
+        // yet still resolve
+        jqXHR.fail(function() {
+            if ( jqXHR.status === 401 ) {
+                originalOptions.retryAttempt = true;
+                updateToken(function() {
+                    console.log("[INFO] Retrying previous request.");
+                    $.ajax(originalOptions).then(dfd.resolve, dfd.reject);
+                });
+            } else {
+                dfd.rejectWith( this, arguments );
+            }
+        });
+
+        // NOW override the jqXHR's promise functions with our deferred
+        return dfd.promise(jqXHR);
     });
 
     // Log out when the 'Log out' button is clicked.
@@ -204,15 +129,7 @@ $(document).ready(function() {
             type: "POST"
         }).done(function(data, textStatus, jqXHR) {
             console.log(getCurrentTime() + " [js/security.js] (#security-logout-btn -> click) - Successfully logged out");
-            
-            // Once you have successfully logged out, redirect them to the log in page.
-            $("body").pagecontainer("change", "#signin-page");
-        }).fail(function(jqXHR, textStatus, errorThrown) {
-            alert(errorThrown);
-            console.log(getCurrentTime() + " [js/security.js] (#security-logout-btn -> click) - error in ajax" +
-                    " - jqXHR = " + jqXHR.status +
-                    ", errorThrown = " + errorThrown +
-                    ", responseText = " + jqXHR.responseText);
+            alert('Not implemented.')
         });
         
         console.log(getCurrentTime() + " [js/security.js] (#security-logout-btn -> click) - end");
@@ -222,231 +139,8 @@ $(document).ready(function() {
     var initSecurity = function () {
         console.log(getCurrentTime() + " [js/security.js] (initSecurity) - start");
         //Fetches the initial member data
-        CONTACTS.security.submitSignIn();
-        CONTACTS.security.submitSignUp();
-        CONTACTS.security.submitAssignRole();
         securityService = new SecurityService();
         console.log(getCurrentTime() + " [js/security.js] (initSecurity) - end");
-    };
-
-    /**
-     * Attempts to sign up using a JAX-RS POST.
-     */
-    CONTACTS.security.submitSignUp = function() {
-        console.log(getCurrentTime() + " [js/security.js] (submitSignUp) - start");
-        
-        $("#signup-form").submit(function(event) {
-            console.log(getCurrentTime() + " [js/security.js] (submitSignUp) - submit event) - checking if the form is valid");
-            
-            // Ensure that the form has been validated.
-            CONTACTS.validation.signUpFormValidator.form();
-            // If there are any validation error then don't process the submit.
-            if (CONTACTS.validation.signUpFormValidator.valid()){
-                console.log(getCurrentTime() + " [js/security.js] (submitSignUp) - submit event) - start");
-                event.preventDefault();
-
-                // Transform the form fields into JSON.
-                // Must pull from the specific form so that we get the right data in case another form has data in it.
-                var serializedForm = $("#signup-form").serializeObject();
-                // Turn the object into a String.
-                var userData = JSON.stringify(serializedForm);
-
-                var jqxhr = $.ajax({
-                    url: "rest/security/registration",
-                    contentType: "application/json",
-                    dataType: "json",
-                    data: userData,
-                    type: "POST"
-                }).done(function(data, textStatus, jqXHR) {
-
-                    // Reset this flag when the form passes validation.
-                    CONTACTS.validation.formUserName = null;
-
-                    // Clear the form or else the next time you go to sign up the last one will still be there.
-                    $("#signup-form")[0].reset();
-                    
-                    // Remove errors displayed as a part of the validation system.
-                    $(".invalid").remove();
-
-                    // Because we turned off the automatic page transition to catch server side error we need to do it ourselves.
-                    $("body").pagecontainer("change", "#signin-page");
-                    
-                }).fail(function(jqXHR, textStatus, errorThrown) {
-                    // Remove errors display as a part of the validation system.
-                    $(".invalid").remove();
-
-                    // Check for server side validation errors.  This should catch the email uniqueness validation.
-                    if ((jqXHR.status === 409) || (jqXHR.status === 400)) {
-                        
-                        // Get the user.
-                        var newUser = $("#signup-form")[0];
-                        
-                        // Extract the error messages from the server.
-                        var errorMsg = $.parseJSON(jqXHR.responseText);
-
-                        // We only want to set this flag if there is actual email error.
-                        $.each(errorMsg, function(index, val) {
-                            if (index === "userName"){
-                                // Get the User userName and set it for comparison in the form validation.
-                                $.each(newUser, function(index, val){
-                                    // This will look for an element with the name/key of "userName" and pull it's value.
-                                    if (val.name == "userName"){
-                                        CONTACTS.validation.formUserName = val.value;
-                                        return false;
-                                    }
-                                });
-                            }
-                        });
-
-                        // Apply the error to the form.
-                        CONTACTS.validation.displayServerSideErrors("#signup-form", errorMsg);
-
-                        console.log(getCurrentTime() + " [js/security.js] (submitSignUp) - restSignUpEndpoint - error in ajax" +
-                                " - jqXHR = " + jqXHR.status +
-                                ", textStatus = " + textStatus +
-                                ", errorThrown = " + errorThrown +
-                                ", responseText = " + jqXHR.responseText);
-                    } else {
-                        //Catch anything else that is not a sign up form failure. 
-                        console.log(getCurrentTime() + " [js/security.js] (submitSignUp) - restSignUpEndpoint - error in ajax" +
-                                " - jqXHR = " + jqXHR.status +
-                                ", textStatus = " + textStatus +
-                                ", errorThrown = " + errorThrown +
-                                ", responseText = " + jqXHR.responseText);
-                        
-                        // Extract the error messages from the server.
-                        var errorMsg = $.parseJSON(jqXHR.responseText);
-                        
-                        // Apply the error to the form.
-                        CONTACTS.validation.displayServerSideErrors("#signup-form", errorMsg);
-                    }
-                });
-                console.log(getCurrentTime() + " [js/security.js] (submitSignUp) - submit event) - end");
-            }
-        });
-    };
-
-    /**
-     * Attempts to sign in using a JAX-RS POST.
-     */
-    CONTACTS.security.submitSignIn = function() {
-        console.log(getCurrentTime() + " [js/security.js] (submitSignIn) - start");
-        
-        $("#signin-form").submit(function(event) {
-            console.log(getCurrentTime() + " [js/security.js] (submitSignIn) - submit event) - checking if the form is valid");
-            
-            // Ensure that the form has been validated.
-            CONTACTS.validation.signInFormValidator.form();
-            // If there are any validation error then don't process the submit.
-            if (CONTACTS.validation.signInFormValidator.valid()){
-                console.log(getCurrentTime() + " [js/security.js] (submitSignIn) - submit event) - start");
-                event.preventDefault();
-
-                var serializedForm = $("#signin-form").serializeObject();
-                var userData = JSON.stringify(serializedForm);
-
-                // Send the login and password to the server for Auth-n and Auth-z
-                var jqxhr = $.ajax({
-                    url: restSecurityEndpoint + "/user/info",
-                    contentType: "application/json",
-                    dataType: "json",
-                    headers: {
-                        "Authorization": "Basic " + btoa(serializedForm.loginName + ":" + serializedForm.password)
-                    },
-                    type: "GET"
-                }).done(function(data, textStatus, jqXHR) {
-                    securityService.initSession(data);
-                    console.log(getCurrentTime() + " [js/security.js] (submitSignIn) - ajax done");
-                    
-                    // Clear the form or else the next time you go to sign in the last one will still be there.
-                    $("#signin-form")[0].reset();
-                    
-                    // Remove errors display as a part of the validation system.
-                    $(".invalid").remove();
-
-                    // Once the user has successfully signed in, their credintials gets loaded into the global 'currentUser'.
-                    CONTACTS.security.loadCurrentUser();
-
-                 // Because we turned off the automatic page transition to catch server side error we need to do it ourselves.
-                    $( "body" ).pagecontainer( "change", "#contacts-list-page");
-                }).fail(function(jqXHR, textStatus, errorThrown) {
-                    // Remove errors display as a part of the validation system.
-                    $(".invalid").remove();
-
-                    if (jqXHR.status === 401) {
-                        
-                        // The name value must match a form name value exactly or else the message will be displayed at 
-                        // the top of the form. If it does match an form input name then it will be displayed with the input.
-                        var errorMsg = {invalid: "Invalid username and/or password. Do you need me to type it for you? Please try again."};
-                        
-                        // If the log in fails then post an error on the form telling them the log in attempt was invalid.
-                        CONTACTS.validation.displayServerSideErrors("#signin-form", errorMsg);
-                        
-                        console.log(getCurrentTime() + " [js/security.js] (submitSignIn) - error in ajax " +
-                                " - jqXHR = " + jqXHR.status +
-                                ", textStatus = " + textStatus +
-                                ", errorThrown = " + errorThrown +
-                                ", responseText = " + jqXHR.responseText);
-                    } else {
-                        // Catch anything else that is not a log-in failure.
-                        console.log(getCurrentTime() + " [js/submissions.js] (submitCreate) - error in ajax" +
-                                " - jqXHR = " + jqXHR.status +
-                                ", textStatus = " + textStatus +
-                                ", errorThrown = " + errorThrown +
-                                ", responseText = " + jqXHR.responseText);
-                    
-                        // Extract the error messages from the server.
-                        var errorMsg = $.parseJSON(jqXHR.responseText);
-                        
-                        // Apply the error to the form.
-                        CONTACTS.validation.displayServerSideErrors("#signin-form", errorMsg);
-                    }
-                });
-                console.log(getCurrentTime() + " [js/security.js] (submitSignIn) - submit event) - end");
-            }
-        });
-    };
-
-    /**
-     * Attempts to role assignment using a JAX-RS POST.
-     */
-    CONTACTS.security.submitAssignRole = function() {
-        console.log(getCurrentTime() + " [js/security.js] (submitAssignRole) - start");
-
-        $("#role-assignment-form").submit(function(event) {
-            console.log(getCurrentTime() + " [js/security.js] (submitAssignRole) - submit event) - checking if the form is valid");
-            
-            // Ensure that the form has been validated.
-            CONTACTS.validation.assignRoleFormValidator.form();
-            // If there are any validation error then don't process the submit.
-            if (CONTACTS.validation.assignRoleFormValidator.valid()){
-                console.log(getCurrentTime() + " [js/security.js] (submitAssignRole) - submit event) - start");
-                event.preventDefault();
-
-                var serializedForm = $("#role-assignment-form").serializeObject();
-
-                var jqxhr = $.ajax({
-                    url: restSecurityEndpoint + "role/assign/" + serializedForm.userName + "/" + serializedForm.roleName,
-                    type: "POST"
-                }).done(function(data, textStatus, jqXHR) {
-                    console.log(getCurrentTime() + " [js/security.js] (submitAssignRole) - ajax done");
-                    
-                    // Because we turned off the automatic page transition to catch server side error we need to do it ourselves.
-                    // Call the pop-up if the role gets assigned.
-                    $("body").pagecontainer("change", "#role-assignment-popup", { transition: "pop" });
-                    
-                }).fail(function(jqXHR, textStatus, errorThrown) {
-                    alert("Could not assign role, please select an user and a role.");
-                    
-                    console.log(getCurrentTime() + " [js/security.js] (submitAssignRole) - error in ajax" +
-                            " - jqXHR = " + jqXHR.status +
-                            ", textStatus = " + textStatus +
-                            ", errorThrown = " + errorThrown +
-                            ", responseText = " + jqXHR.responseText);
-                });
-                console.log(getCurrentTime() + " [js/security.js] (submitAssignRole) - submit event) - end");
-            }
-        });
     };
 
     /**

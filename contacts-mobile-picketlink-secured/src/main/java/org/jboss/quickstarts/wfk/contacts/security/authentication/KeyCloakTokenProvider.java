@@ -21,14 +21,19 @@
  */
 package org.jboss.quickstarts.wfk.contacts.security.authentication;
 
+import org.picketlink.idm.IdentityManager;
 import org.picketlink.idm.credential.Token;
 import org.picketlink.idm.credential.storage.TokenCredentialStorage;
 import org.picketlink.idm.model.Account;
+import org.picketlink.idm.model.basic.Realm;
 import org.picketlink.idm.model.basic.User;
-import org.picketlink.json.jwt.JWTBuilder;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Instance;
+import javax.inject.Inject;
 import java.util.Date;
+
+import static org.picketlink.idm.IDMMessages.MESSAGES;
 
 /**
  * <p>A {@link org.picketlink.idm.credential.Token.Provider} to manage JSON Web Signature tokens.</p>
@@ -38,44 +43,66 @@ import java.util.Date;
 @ApplicationScoped
 public class KeyCloakTokenProvider implements Token.Provider {
 
+    @Inject
+    private Instance<IdentityManager> identityManagerInstance;
+
     @Override
     public Account getAccount(Token token) {
-        KeyCloakJWT keyCloakJWT = unMarshall(token.getToken());
+        KeyCloakToken keyCloakToken = (KeyCloakToken) token;
+        User account = new User(keyCloakToken.getUserName());
 
-        User user = new User(keyCloakJWT.getUserName());
+        account.setId(keyCloakToken.getUserId());
 
-        user.setId(keyCloakJWT.getSubject());
+        Realm partition = new Realm(keyCloakToken.getRealm());
 
-        return user;
+        partition.setId(partition.getName());
+
+        account.setPartition(partition);
+
+        return account;
     }
 
     @Override
     public Token create(Object value) {
-        return new Token(value.toString());
+        KeyCloakToken keyCloakToken = new KeyCloakToken(value.toString());
+        Account account = getAccount(keyCloakToken);
+
+        IdentityManager identityManager = getIdentityManager();
+
+        identityManager.updateCredential(account, keyCloakToken);
+
+        return keyCloakToken;
     }
 
     @Override
     public Token issue(Account account) {
-        return null;
+        throw MESSAGES.notImplemented();
     }
 
     @Override
     public Token renew(Token token) {
-        return null;
+        throw MESSAGES.notImplemented();
     }
 
     @Override
     public boolean validate(Token token) {
-        KeyCloakJWT keyCloakJWT = unMarshall(token.getToken());
+        KeyCloakToken keyCloakToken = (KeyCloakToken) token;
 
-        Date expirationDate = new Date(keyCloakJWT.getExpiration());
+        Date expirationDate = keyCloakToken.getExpiration();
 
-        return expirationDate.before(new Date());
+        System.out.println(expirationDate);
+        System.out.println(new Date());
+
+        boolean before = new Date().before(expirationDate);
+
+        System.out.println(before);
+
+        return before;
     }
 
     @Override
     public void invalidate(Account account) {
-        issue(account);
+        getIdentityManager().removeCredential(account, TokenCredentialStorage.class);
     }
 
     @Override
@@ -88,7 +115,7 @@ public class KeyCloakTokenProvider implements Token.Provider {
         return null;
     }
 
-    private KeyCloakJWT unMarshall(Object value) {
-        return (KeyCloakJWT) new JWTBuilder(KeyCloakJWT.class).build(value.toString());
+    private IdentityManager getIdentityManager() {
+        return this.identityManagerInstance.get();
     }
 }

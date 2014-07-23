@@ -22,6 +22,7 @@
 package org.jboss.quickstarts.wfk.contacts.security.store;
 
 import org.picketlink.idm.config.AbstractIdentityStoreConfiguration;
+import org.picketlink.idm.credential.Token;
 import org.picketlink.idm.credential.handler.CredentialHandler;
 import org.picketlink.idm.model.AttributedType;
 import org.picketlink.idm.spi.ContextInitializer;
@@ -36,7 +37,13 @@ import java.util.Set;
  */
 public class TokenIdentityStoreConfiguration extends AbstractIdentityStoreConfiguration {
 
-    protected TokenIdentityStoreConfiguration(Map<Class<? extends AttributedType>,
+    private final IdentityExtractor identityExtractor;
+    private Token.Provider tokenProvider;
+
+    protected TokenIdentityStoreConfiguration(
+        Token.Provider tokenProvider,
+        IdentityExtractor identityExtractor,
+        Map<Class<? extends AttributedType>,
         Set<IdentityOperation>> supportedTypes,
         Map<Class<? extends AttributedType>,
             Set<IdentityOperation>>
@@ -48,10 +55,20 @@ public class TokenIdentityStoreConfiguration extends AbstractIdentityStoreConfig
             boolean supportsCredential,
             boolean supportsPermissions) {
         super(supportedTypes, unsupportedTypes, contextInitializers, credentialHandlerProperties, credentialHandlers, supportsAttribute, supportsCredential, supportsPermissions);
+        this.identityExtractor = identityExtractor;
+        this.tokenProvider = tokenProvider;
     }
 
     @Override
     public Class<? extends IdentityStore> getIdentityStoreType() {
         return TokenIdentityStore.class;
+    }
+
+    public IdentityExtractor getIdentityExtractor() {
+        return this.identityExtractor;
+    }
+
+    public Token.Provider getTokenProvider() {
+        return this.tokenProvider;
     }
 }
