@@ -72,13 +72,11 @@ public class TokenIdentityStore extends AbstractIdentityStore<TokenIdentityStore
     public static final String AUTHENTICATED_ACCOUNT = "AUTHENTICATED_ACCOUNT";
 
     private final Map<Account, TokenCredentialStorage> tokenRegistry = new HashMap<Account, TokenCredentialStorage>();
-    private IdentityExtractor identityExtractor;
     private Token.Provider tokenProvider;
 
     @Override
     public void setup(TokenIdentityStoreConfiguration config) {
         super.setup(config);
-        this.identityExtractor = config.getIdentityExtractor();
         this.tokenProvider = config.getTokenProvider();
     }
 
@@ -133,7 +131,8 @@ public class TokenIdentityStore extends AbstractIdentityStore<TokenIdentityStore
             Token currentToken = getCurrentToken(context);
 
             if (currentToken != null) {
-                IdentityType identityType = this.identityExtractor.extractIdentity(currentToken, identityTypeType, stereotypeProperty.value(), queryParameterValue);
+                IdentityType identityType = this.tokenProvider.extractIdentity(currentToken, identityTypeType, stereotypeProperty
+                    .value(), queryParameterValue);
 
                 if (identityType != null) {
                     identityTypes.add((V) identityType);
@@ -269,7 +268,7 @@ public class TokenIdentityStore extends AbstractIdentityStore<TokenIdentityStore
             throw new IdentityManagementException("The IdentityType [" + identityType + "] does not have a value for property [" + mappedProperty.getName() + "].");
         }
 
-        return this.identityExtractor.extractIdentity(token, identityType.getClass(), stereotypeProperty, identifier);
+        return this.tokenProvider.extractIdentity(token, identityType.getClass(), stereotypeProperty, identifier);
     }
 
     private Token getCurrentToken(IdentityContext context) {

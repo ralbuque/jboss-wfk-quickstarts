@@ -32,7 +32,6 @@ import org.picketlink.idm.credential.handler.TokenCredentialHandler;
  */
 public class TokenIdentityStoreConfigurationBuilder extends IdentityStoreConfigurationBuilder<TokenIdentityStoreConfiguration, TokenIdentityStoreConfigurationBuilder> {
 
-    private IdentityExtractor identityExtractor;
     private Token.Provider tokenProvider;
 
     public TokenIdentityStoreConfigurationBuilder(IdentityStoresConfigurationBuilder builder) {
@@ -43,7 +42,6 @@ public class TokenIdentityStoreConfigurationBuilder extends IdentityStoreConfigu
     protected TokenIdentityStoreConfiguration create() throws SecurityConfigurationException {
         return new TokenIdentityStoreConfiguration(
             this.tokenProvider,
-            this.identityExtractor,
             getSupportedTypes(),
             getUnsupportedTypes(),
             getContextInitializers(),
@@ -55,11 +53,6 @@ public class TokenIdentityStoreConfigurationBuilder extends IdentityStoreConfigu
         );
     }
 
-    public TokenIdentityStoreConfigurationBuilder identityExtractor(IdentityExtractor identityExtractor) {
-        this.identityExtractor = identityExtractor;
-        return this;
-    }
-
     public TokenIdentityStoreConfigurationBuilder tokenProvider(Token.Provider tokenProvider) {
         this.tokenProvider = tokenProvider;
         setCredentialHandlerProperty(TokenCredentialHandler.TOKEN_PROVIDER, this.tokenProvider);
@@ -69,10 +62,6 @@ public class TokenIdentityStoreConfigurationBuilder extends IdentityStoreConfigu
     @Override
     protected void validate() {
         super.validate();
-
-        if (this.identityExtractor == null) {
-            throw new SecurityConfigurationException("You must provide an " + IdentityExtractor.class + ".");
-        }
 
         if (this.tokenProvider == null) {
             throw new SecurityConfigurationException("You must provide a " + Token.Provider.class + ".");

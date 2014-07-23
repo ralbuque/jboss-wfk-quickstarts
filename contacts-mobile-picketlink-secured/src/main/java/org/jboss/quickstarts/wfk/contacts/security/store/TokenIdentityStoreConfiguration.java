@@ -37,12 +37,10 @@ import java.util.Set;
  */
 public class TokenIdentityStoreConfiguration extends AbstractIdentityStoreConfiguration {
 
-    private final IdentityExtractor identityExtractor;
     private Token.Provider tokenProvider;
 
     protected TokenIdentityStoreConfiguration(
         Token.Provider tokenProvider,
-        IdentityExtractor identityExtractor,
         Map<Class<? extends AttributedType>,
         Set<IdentityOperation>> supportedTypes,
         Map<Class<? extends AttributedType>,
@@ -55,17 +53,12 @@ public class TokenIdentityStoreConfiguration extends AbstractIdentityStoreConfig
             boolean supportsCredential,
             boolean supportsPermissions) {
         super(supportedTypes, unsupportedTypes, contextInitializers, credentialHandlerProperties, credentialHandlers, supportsAttribute, supportsCredential, supportsPermissions);
-        this.identityExtractor = identityExtractor;
         this.tokenProvider = tokenProvider;
     }
 
     @Override
     public Class<? extends IdentityStore> getIdentityStoreType() {
         return TokenIdentityStore.class;
-    }
-
-    public IdentityExtractor getIdentityExtractor() {
-        return this.identityExtractor;
     }
 
     public Token.Provider getTokenProvider() {

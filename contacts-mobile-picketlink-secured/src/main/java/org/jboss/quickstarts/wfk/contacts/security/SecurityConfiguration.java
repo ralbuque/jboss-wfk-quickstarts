@@ -23,7 +23,6 @@ package org.jboss.quickstarts.wfk.contacts.security;
 
 import org.jboss.quickstarts.wfk.contacts.security.authentication.KeyCloakTokenProvider;
 import org.jboss.quickstarts.wfk.contacts.security.store.IdentityContextInitializer;
-import org.jboss.quickstarts.wfk.contacts.security.store.KeyCloakTokenIdentityExtractor;
 import org.jboss.quickstarts.wfk.contacts.security.store.TokenIdentityStoreConfiguration;
 import org.jboss.quickstarts.wfk.contacts.security.store.TokenIdentityStoreConfigurationBuilder;
 import org.picketlink.annotations.PicketLink;
@@ -52,9 +51,6 @@ public class SecurityConfiguration {
     private KeyCloakTokenProvider tokenProvider;
 
     @Inject
-    private KeyCloakTokenIdentityExtractor tokenIdentityExtractor;
-
-    @Inject
     private EEJPAContextInitializer contextInitializer;
 
     @Inject
@@ -79,7 +75,6 @@ public class SecurityConfiguration {
                 .named("default.config")
                     .stores()
                         .add(TokenIdentityStoreConfiguration.class, TokenIdentityStoreConfigurationBuilder.class)
-                            .identityExtractor(this.tokenIdentityExtractor)
                             .tokenProvider(this.tokenProvider)
                             .addContextInitializer(this.identityContextInitializer)
                             .supportType(User.class, Role.class)

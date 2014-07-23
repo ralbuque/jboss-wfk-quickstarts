@@ -55,11 +55,11 @@ $(document).ready(function() {
                 }
             })
             .error(function() {
-                console.log("[ERROR] KeyCloak Error.");
+                console.log("Error from KeyCloak.");
             });
     }
 
-    keycloak.init({ onLoad: 'login-required' }).success(updateToken);
+    keycloak.init({ onLoad: 'login-required' }).success(updateToken(function() {}));
 
     /**
      * Register a handler to be called when Ajax requests complete with an error. Whenever an Ajax request completes
