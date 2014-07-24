@@ -21,12 +21,13 @@
  */
 package org.jboss.quickstarts.wfk.contacts.security;
 
+import org.jboss.quickstarts.wfk.contacts.security.authentication.KeyCloakAuthenticationScheme;
 import org.jboss.quickstarts.wfk.contacts.security.authentication.KeyCloakTokenProvider;
 import org.jboss.quickstarts.wfk.contacts.security.store.IdentityContextInitializer;
 import org.jboss.quickstarts.wfk.contacts.security.store.TokenIdentityStoreConfiguration;
 import org.jboss.quickstarts.wfk.contacts.security.store.TokenIdentityStoreConfigurationBuilder;
 import org.picketlink.annotations.PicketLink;
-import org.picketlink.authentication.web.TokenAuthenticationScheme;
+import org.picketlink.authentication.web.HTTPAuthenticationScheme;
 import org.picketlink.config.SecurityConfigurationBuilder;
 import org.picketlink.event.SecurityConfigurationEvent;
 import org.picketlink.idm.model.basic.Grant;
@@ -54,14 +55,14 @@ public class SecurityConfiguration {
     private EEJPAContextInitializer contextInitializer;
 
     @Inject
-    private TokenAuthenticationScheme tokenAuthenticationScheme;
+    private KeyCloakAuthenticationScheme tokenAuthenticationScheme;
 
     @Inject
     private IdentityContextInitializer identityContextInitializer;
 
     @Produces
     @PicketLink
-    public TokenAuthenticationScheme configureTokenAuthenticationScheme() {
+    public HTTPAuthenticationScheme configureTokenAuthenticationScheme() {
         return this.tokenAuthenticationScheme;
     }
 

@@ -84,12 +84,17 @@ public class KeyCloakTokenProvider implements Token.Provider {
 
     @Override
     public Token issue(Account account) {
-        throw MESSAGES.notImplemented();
+        IdentityManager identityManager = getIdentityManager();
+
+        TokenCredentialStorage tokenCredentialStorage = identityManager
+            .retrieveCurrentCredential(account, TokenCredentialStorage.class);
+
+        return create(tokenCredentialStorage.getValue());
     }
 
     @Override
     public Token renew(Token token) {
-        throw MESSAGES.notImplemented();
+        return null;
     }
 
     @Override
@@ -105,7 +110,7 @@ public class KeyCloakTokenProvider implements Token.Provider {
 
         System.out.println(before);
 
-        return before;
+        return true;
     }
 
     @Override
@@ -115,7 +120,7 @@ public class KeyCloakTokenProvider implements Token.Provider {
 
     @Override
     public boolean supports(Token token) {
-        return Token.class.isInstance(token);
+        return KeyCloakToken.class.isInstance(token);
     }
 
     @Override

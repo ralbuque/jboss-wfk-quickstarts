@@ -62,24 +62,6 @@ $(document).ready(function() {
 
         securityService = new SecurityService();
 
-        var keycloak = Keycloak('keycloak.json');
-
-        var renewToken = function (callbackHandler) {
-            keycloak.updateToken(10)
-                .success(function() {
-                    if (keycloak.idToken) {
-                        console.log("[INFO] Updating token.");
-                        securityService.endSession();
-                        securityService.initSession(keycloak.token);
-                        console.log("[INFO] Token updated.");
-                        callbackHandler();
-                    }
-                })
-                .error(function() {
-                    securityService.endSession();
-                });
-        }
-
         /**
          * Register a handler to be called when Ajax requests complete with an error. Whenever an Ajax request completes
          * with an error, jQuery triggers the ajaxError event. Any and all handlers that have been registered with the
@@ -89,9 +71,6 @@ $(document).ready(function() {
          * This will be overridden by any ajax call that handles these errors it's self.
          */
         $.ajaxSetup({
-            beforeSend: function(xhr, settings) {
-                securityService.secureRequest(xhr);
-            },
             error: function( jqXHR, errorThrown ) {
                 if (jqXHR.status == 400) {
                     console.log("[ERROR] Bad request response from the server.");
@@ -107,39 +86,6 @@ $(document).ready(function() {
                 }
             }
         });
-
-        $.ajaxPrefilter(function( opts, originalOptions, jqXHR ) {
-            // you could pass this option in on a "retry" so that it doesn't
-            // get all recursive on you.
-            if ( opts.retryAttempt ) {
-                console.log("Not filtering retry request.");
-                return;
-            }
-
-            var dfd = $.Deferred();
-
-            // if the request works, return normally
-            jqXHR.done(dfd.resolve);
-
-            // if the request fails, do something else
-            // yet still resolve
-            jqXHR.fail(function() {
-                if ( jqXHR.status === 401 ) {
-                    originalOptions.retryAttempt = true;
-                    renewToken(function() {
-                        console.log("Retrying request...");
-                        $.ajax(originalOptions).then(dfd.resolve, dfd.reject);
-                    });
-                } else {
-                    dfd.rejectWith( this, arguments );
-                }
-            });
-
-            // NOW override the jqXHR's promise functions with our deferred
-            return dfd.promise(jqXHR);
-        });
-
-        keycloak.init({ onLoad: 'login-required' }).success(renewToken);
 
         console.log(getCurrentTime() + " [js/security.js] (initSecurity) - end");
     };

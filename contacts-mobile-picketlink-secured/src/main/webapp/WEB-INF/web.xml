@@ -29,16 +29,23 @@
         <url-pattern>/rest/private/*</url-pattern>
     </filter-mapping>
 
-    <!-- Force SSL usage
     <security-constraint>
-		<web-resource-collection>
-			<web-resource-name>JaxRsActivator</web-resource-name>
-			<url-pattern>/*</url-pattern>
-		</web-resource-collection>
-		<user-data-constraint>
-			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
-		</user-data-constraint>
-	</security-constraint>
-    -->
+        <web-resource-collection>
+            <web-resource-name>Products</web-resource-name>
+            <url-pattern>/*</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>User</role-name>
+        </auth-constraint>
+    </security-constraint>
+
+    <login-config>
+        <auth-method>KEYCLOAK</auth-method>
+        <realm-name>demo</realm-name>
+    </login-config>
+
+    <security-role>
+        <role-name>User</role-name>
+    </security-role>
 
 </web-app>

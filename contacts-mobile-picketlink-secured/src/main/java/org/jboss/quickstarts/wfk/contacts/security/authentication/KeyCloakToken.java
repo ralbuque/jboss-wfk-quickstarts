@@ -51,18 +51,24 @@ public class KeyCloakToken extends Token {
     public List<String> getRoles() {
         List<String> roles = new ArrayList<String>();
         JsonObject resourceAccess = this.jws.getClaims().getJsonObject("resource_access");
-        Collection<JsonValue> resources = resourceAccess.values();
-        Iterator<JsonValue> resourcesIterator = resources.iterator();
 
-        while (resourcesIterator.hasNext()) {
-            JsonObject resource = (JsonObject) resourcesIterator.next();
-            JsonArray rolesArray = resource.getJsonArray("roles");
-            Iterator<JsonValue> rolesIterator = rolesArray.iterator();
+        if (resourceAccess != null) {
+            Collection<JsonValue> resources = resourceAccess.values();
 
-            while (rolesIterator.hasNext()) {
-                JsonString role = (JsonString) rolesIterator.next();
+            if (resources != null) {
+                Iterator<JsonValue> resourcesIterator = resources.iterator();
 
-                roles.add(role.getString());
+                while (resourcesIterator.hasNext()) {
+                    JsonObject resource = (JsonObject) resourcesIterator.next();
+                    JsonArray rolesArray = resource.getJsonArray("roles");
+                    Iterator<JsonValue> rolesIterator = rolesArray.iterator();
+
+                    while (rolesIterator.hasNext()) {
+                        JsonString role = (JsonString) rolesIterator.next();
+
+                        roles.add(role.getString());
+                    }
+                }
             }
         }
 
