@@ -39,30 +39,37 @@ import java.util.List;
 /**
  * @author Pedro Igor
  */
-public class KeyCloakToken extends Token {
+public class KeyCloakToken implements Token {
 
     private final JWS jws;
+    private final String encodedToken;
 
     public KeyCloakToken(String encodedToken) {
-        super(encodedToken);
+        this.encodedToken = encodedToken;
         this.jws = new JWSBuilder().build(encodedToken);
     }
 
     public List<String> getRoles() {
         List<String> roles = new ArrayList<String>();
         JsonObject resourceAccess = this.jws.getClaims().getJsonObject("resource_access");
-        Collection<JsonValue> resources = resourceAccess.values();
-        Iterator<JsonValue> resourcesIterator = resources.iterator();
 
-        while (resourcesIterator.hasNext()) {
-            JsonObject resource = (JsonObject) resourcesIterator.next();
-            JsonArray rolesArray = resource.getJsonArray("roles");
-            Iterator<JsonValue> rolesIterator = rolesArray.iterator();
+        if (resourceAccess != null) {
+            Collection<JsonValue> resources = resourceAccess.values();
 
-            while (rolesIterator.hasNext()) {
-                JsonString role = (JsonString) rolesIterator.next();
+            if (resources != null) {
+                Iterator<JsonValue> resourcesIterator = resources.iterator();
 
-                roles.add(role.getString());
+                while (resourcesIterator.hasNext()) {
+                    JsonObject resource = (JsonObject) resourcesIterator.next();
+                    JsonArray rolesArray = resource.getJsonArray("roles");
+                    Iterator<JsonValue> rolesIterator = rolesArray.iterator();
+
+                    while (rolesIterator.hasNext()) {
+                        JsonString role = (JsonString) rolesIterator.next();
+
+                        roles.add(role.getString());
+                    }
+                }
             }
         }
 
@@ -87,5 +94,15 @@ public class KeyCloakToken extends Token {
 
     public String getRealm() {
         return this.jws.getIssuer();
+    }
+
+    @Override
+    public String getType() {
+        return getClass().getName();
+    }
+
+    @Override
+    public String getToken() {
+        return this.encodedToken;
     }
 }
