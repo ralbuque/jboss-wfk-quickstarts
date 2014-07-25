@@ -21,19 +21,11 @@
  */
 package org.jboss.quickstarts.wfk.contacts.security;
 
-import org.jboss.quickstarts.wfk.contacts.security.authentication.KeyCloakAuthenticationScheme;
-import org.jboss.quickstarts.wfk.contacts.security.authentication.KeyCloakTokenProvider;
-import org.jboss.quickstarts.wfk.contacts.security.store.IdentityContextInitializer;
-import org.jboss.quickstarts.wfk.contacts.security.store.TokenIdentityStoreConfiguration;
-import org.jboss.quickstarts.wfk.contacts.security.store.TokenIdentityStoreConfigurationBuilder;
+import org.jboss.quickstarts.wfk.contacts.security.authentication.PicketLinkSAMLAuthenticationScheme;
 import org.picketlink.annotations.PicketLink;
 import org.picketlink.authentication.web.HTTPAuthenticationScheme;
 import org.picketlink.config.SecurityConfigurationBuilder;
 import org.picketlink.event.SecurityConfigurationEvent;
-import org.picketlink.idm.model.basic.Grant;
-import org.picketlink.idm.model.basic.Role;
-import org.picketlink.idm.model.basic.User;
-import org.picketlink.internal.EEJPAContextInitializer;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
@@ -49,39 +41,22 @@ import javax.inject.Inject;
 public class SecurityConfiguration {
 
     @Inject
-    private KeyCloakTokenProvider tokenProvider;
-
-    @Inject
-    private EEJPAContextInitializer contextInitializer;
-
-    @Inject
-    private KeyCloakAuthenticationScheme tokenAuthenticationScheme;
-
-    @Inject
-    private IdentityContextInitializer identityContextInitializer;
-
-    @Produces
-    @PicketLink
-    public HTTPAuthenticationScheme configureTokenAuthenticationScheme() {
-        return this.tokenAuthenticationScheme;
-    }
+    private PicketLinkSAMLAuthenticationScheme tokenAuthenticationScheme;
 
     public void configureIdentityManagement(@Observes SecurityConfigurationEvent event) {
         SecurityConfigurationBuilder builder = event.getBuilder();
 
         builder
-            .identity()
-                .stateless()
             .idmConfig()
                 .named("default.config")
                     .stores()
-                        .add(TokenIdentityStoreConfiguration.class, TokenIdentityStoreConfigurationBuilder.class)
-                            .tokenProvider(this.tokenProvider)
-                            .addContextInitializer(this.identityContextInitializer)
-                            .supportType(User.class, Role.class)
-                            .supportGlobalRelationship(Grant.class)
-                            .supportCredentials(true)
-                            .supportPermissions(false)
-                            .supportAttributes(false);
+                        .token()
+                            .supportAllFeatures();
+    }
+
+    @Produces
+    @PicketLink
+    public HTTPAuthenticationScheme configureTokenAuthenticationScheme() {
+        return this.tokenAuthenticationScheme;
     }
 }

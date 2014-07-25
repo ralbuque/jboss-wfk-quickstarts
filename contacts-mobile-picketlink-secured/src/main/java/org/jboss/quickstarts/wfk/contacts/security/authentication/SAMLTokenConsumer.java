@@ -26,9 +26,7 @@ import org.picketlink.common.properties.query.AnnotatedPropertyCriteria;
 import org.picketlink.common.properties.query.PropertyQueries;
 import org.picketlink.common.reflection.Reflections;
 import org.picketlink.idm.IdentityManagementException;
-import org.picketlink.idm.IdentityManager;
 import org.picketlink.idm.credential.Token;
-import org.picketlink.idm.credential.storage.TokenCredentialStorage;
 import org.picketlink.idm.model.Account;
 import org.picketlink.idm.model.IdentityType;
 import org.picketlink.idm.model.annotation.StereotypeProperty;
@@ -36,9 +34,6 @@ import org.picketlink.idm.model.basic.Realm;
 import org.picketlink.idm.model.basic.User;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Instance;
-import javax.inject.Inject;
-import java.util.Date;
 import java.util.List;
 
 import static org.picketlink.idm.IDMMessages.MESSAGES;
@@ -49,97 +44,12 @@ import static org.picketlink.idm.IDMMessages.MESSAGES;
  * @author Pedro Igor
  */
 @ApplicationScoped
-public class KeyCloakTokenProvider implements Token.Provider {
-
-    @Inject
-    private Instance<IdentityManager> identityManagerInstance;
+public class SAMLTokenConsumer implements Token.Consumer<SAMLToken> {
 
     @Override
-    public Account getAccount(Token token) {
-        KeyCloakToken keyCloakToken = (KeyCloakToken) token;
-        User account = new User(keyCloakToken.getUserName());
-
-        account.setId(keyCloakToken.getUserId());
-
-        Realm partition = new Realm(keyCloakToken.getRealm());
-
-        partition.setId(partition.getName());
-
-        account.setPartition(partition);
-
-        return account;
-    }
-
-    @Override
-    public Token create(Object value) {
-        KeyCloakToken keyCloakToken = new KeyCloakToken(value.toString());
-        Account account = getAccount(keyCloakToken);
-
-        IdentityManager identityManager = getIdentityManager();
-
-        identityManager.updateCredential(account, keyCloakToken);
-
-        return keyCloakToken;
-    }
-
-    @Override
-    public Token issue(Account account) {
-        IdentityManager identityManager = getIdentityManager();
-
-        TokenCredentialStorage tokenCredentialStorage = identityManager
-            .retrieveCurrentCredential(account, TokenCredentialStorage.class);
-
-        return create(tokenCredentialStorage.getValue());
-    }
-
-    @Override
-    public Token renew(Token token) {
-        return null;
-    }
-
-    @Override
-    public boolean validate(Token token) {
-        KeyCloakToken keyCloakToken = (KeyCloakToken) token;
-
-        Date expirationDate = keyCloakToken.getExpiration();
-
-        System.out.println(expirationDate);
-        System.out.println(new Date());
-
-        boolean before = new Date().before(expirationDate);
-
-        System.out.println(before);
-
-        return true;
-    }
-
-    @Override
-    public void invalidate(Account account) {
-        getIdentityManager().removeCredential(account, TokenCredentialStorage.class);
-    }
-
-    @Override
-    public boolean supports(Token token) {
-        return KeyCloakToken.class.isInstance(token);
-    }
-
-    @Override
-    public <T extends TokenCredentialStorage> T getTokenStorage(Account account, Token token) {
-        return null;
-    }
-
-    @Override
-    public <T extends IdentityType> T extractIdentity(Token token, Class<T> identityType, StereotypeProperty.Property stereotypeProperty, Object identifier) {
+    public <T extends IdentityType> T extractIdentity(SAMLToken token, Class<T> identityType, StereotypeProperty.Property stereotypeProperty, Object identifier) {
         if (token == null || token.getToken() == null) {
             throw MESSAGES.nullArgument("Token");
-        }
-
-        KeyCloakToken keyCloakToken;
-
-        try {
-            keyCloakToken = (KeyCloakToken) token;
-        } catch (Exception e) {
-            throw new IdentityManagementException("Token is not a KeyCloakToken.", e);
         }
 
         if (identityType == null) {
@@ -154,11 +64,36 @@ public class KeyCloakTokenProvider implements Token.Provider {
             throw MESSAGES.nullArgument("Identifier value");
         }
 
-        return extractIdentityTypeFromToken(keyCloakToken, identityType, stereotypeProperty, identifier);
+        return extractIdentityTypeFromToken(token, identityType, stereotypeProperty, identifier);
     }
 
-    private <T extends IdentityType> T extractIdentityTypeFromToken(KeyCloakToken keyCloakToken, Class<T> identityType, StereotypeProperty.Property stereotypeProperty, Object identifier) {
-        if (hasIdentityType(keyCloakToken, stereotypeProperty, identifier)) {
+    @Override
+    public boolean supports(SAMLToken token) {
+        return true;
+    }
+
+    @Override
+    public boolean validate(SAMLToken token) {
+        return true;
+    }
+
+    @Override
+    public Account getAccount(SAMLToken token) {
+        User account = new User(token.getUserName());
+
+        account.setId(token.getUserId());
+
+        Realm partition = new Realm(token.getRealm());
+
+        partition.setId(partition.getName());
+
+        account.setPartition(partition);
+
+        return account;
+    }
+
+    private <T extends IdentityType> T extractIdentityTypeFromToken(SAMLToken SAMLToken, Class<T> identityType, StereotypeProperty.Property stereotypeProperty, Object identifier) {
+        if (hasIdentityType(SAMLToken, stereotypeProperty, identifier)) {
             try {
                 T identityTypeInstance = Reflections.newInstance(identityType);
                 Property property = resolveProperty(identityType, stereotypeProperty);
@@ -167,7 +102,7 @@ public class KeyCloakTokenProvider implements Token.Provider {
 
                 return identityTypeInstance;
             } catch (Exception e) {
-                throw new IdentityManagementException("Could not extract IdentityType [" + identityType + "] from Token [" + keyCloakToken + "].", e);
+                throw new IdentityManagementException("Could not extract IdentityType [" + identityType + "] from Token [" + SAMLToken + "].", e);
             }
         }
 
@@ -196,9 +131,9 @@ public class KeyCloakTokenProvider implements Token.Provider {
         throw new IdentityManagementException("Could not resolve property in type [" + identityType + " for StereotypeProperty [" + stereotypeProperty + ".");
     }
 
-    private boolean hasIdentityType(KeyCloakToken keyCloakToken, StereotypeProperty.Property stereotypeProperty, Object identifier) {
+    private boolean hasIdentityType(SAMLToken samlToken, StereotypeProperty.Property stereotypeProperty, Object identifier) {
         if (StereotypeProperty.Property.IDENTITY_ROLE_NAME.equals(stereotypeProperty)) {
-            List<String> roleNames = keyCloakToken.getRoles();
+            List<String> roleNames = samlToken.getRoles();
 
             if (roleNames.contains(identifier)) {
                 return true;
@@ -206,7 +141,7 @@ public class KeyCloakTokenProvider implements Token.Provider {
         }
 
         if (StereotypeProperty.Property.IDENTITY_GROUP_NAME.equals(stereotypeProperty)) {
-            List<String> groupNames = keyCloakToken.getGroups();
+            List<String> groupNames = samlToken.getGroups();
 
             if (groupNames.contains(identifier)) {
                 return true;
@@ -214,7 +149,7 @@ public class KeyCloakTokenProvider implements Token.Provider {
         }
 
         if (StereotypeProperty.Property.IDENTITY_USER_NAME.equals(stereotypeProperty)) {
-            String userName = keyCloakToken.getUserName();
+            String userName = samlToken.getUserName();
 
             if (userName != null && identifier.equals(userName)) {
                 return true;
@@ -222,9 +157,5 @@ public class KeyCloakTokenProvider implements Token.Provider {
         }
 
         return false;
-    }
-
-    private IdentityManager getIdentityManager() {
-        return this.identityManagerInstance.get();
     }
 }
