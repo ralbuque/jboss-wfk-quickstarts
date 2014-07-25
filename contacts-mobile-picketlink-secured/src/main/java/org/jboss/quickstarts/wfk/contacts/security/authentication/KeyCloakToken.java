@@ -39,12 +39,13 @@ import java.util.List;
 /**
  * @author Pedro Igor
  */
-public class KeyCloakToken extends Token {
+public class KeyCloakToken implements Token {
 
     private final JWS jws;
+    private final String encodedToken;
 
     public KeyCloakToken(String encodedToken) {
-        super(encodedToken);
+        this.encodedToken = encodedToken;
         this.jws = new JWSBuilder().build(encodedToken);
     }
 
@@ -93,5 +94,15 @@ public class KeyCloakToken extends Token {
 
     public String getRealm() {
         return this.jws.getIssuer();
+    }
+
+    @Override
+    public String getType() {
+        return getClass().getName();
+    }
+
+    @Override
+    public String getToken() {
+        return this.encodedToken;
     }
 }

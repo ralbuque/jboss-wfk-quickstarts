@@ -24,8 +24,11 @@ package org.jboss.quickstarts.wfk.contacts.security.authentication;
 import org.keycloak.KeycloakSecurityContext;
 import org.picketlink.authentication.web.TokenAuthenticationScheme;
 import org.picketlink.credential.DefaultLoginCredentials;
+import org.picketlink.idm.IdentityManager;
 import org.picketlink.idm.credential.TokenCredential;
 
+import javax.enterprise.inject.Instance;
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -35,22 +38,31 @@ import java.io.IOException;
  */
 public class KeyCloakAuthenticationScheme extends TokenAuthenticationScheme {
 
+    @Inject
+    private Instance<IdentityManager> identityManagerInstance;
+
     @Override
-    protected void extractFromPrimaryAuthenticationScheme(HttpServletRequest request, DefaultLoginCredentials creds) {
+    protected void extractTokenFromRequest(HttpServletRequest request, DefaultLoginCredentials creds) {
+        creds.setCredential(new TokenCredential(extractKeyCloakToken(request)));
+    }
+
+    private KeyCloakToken extractKeyCloakToken(HttpServletRequest request) {
+        KeyCloakToken token = null;
         KeycloakSecurityContext session = (KeycloakSecurityContext) request.getAttribute(KeycloakSecurityContext.class.getName());
 
         if (session != null) {
-            creds.setCredential(new TokenCredential(getTokenProvider().create(session.getTokenString())));
+            token = new KeyCloakToken(session.getTokenString());
         }
-    }
-
-    @Override
-    protected boolean isPrimaryAuthenticationRequest() {
-        return true;
+        return token;
     }
 
     @Override
     public boolean postAuthentication(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        IdentityManager identityManager = this.identityManagerInstance.get();
+        KeyCloakToken keyCloakToken = extractKeyCloakToken(request);
+
+        identityManager.updateCredential(getIdentity().getAccount(), keyCloakToken);
+
         return true;
     }
 }
