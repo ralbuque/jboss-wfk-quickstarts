@@ -168,4 +168,10 @@ public class KeyCloakTokenConsumer implements Token.Consumer<KeyCloakToken> {
 
         return false;
     }
+
+    @Override
+    public Class<KeyCloakToken> getTokenType() {
+        return KeyCloakToken.class;
+    }
+
 }

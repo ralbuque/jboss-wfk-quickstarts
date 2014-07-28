@@ -23,15 +23,11 @@ package org.jboss.quickstarts.wfk.contacts.security.authentication;
 
 import org.keycloak.KeycloakSecurityContext;
 import org.picketlink.authentication.web.TokenAuthenticationScheme;
-import org.picketlink.credential.DefaultLoginCredentials;
 import org.picketlink.idm.IdentityManager;
-import org.picketlink.idm.credential.TokenCredential;
 
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
 /**
  * @author Pedro Igor
@@ -42,27 +38,13 @@ public class KeyCloakAuthenticationScheme extends TokenAuthenticationScheme {
     private Instance<IdentityManager> identityManagerInstance;
 
     @Override
-    protected void extractTokenFromRequest(HttpServletRequest request, DefaultLoginCredentials creds) {
-        creds.setCredential(new TokenCredential(extractKeyCloakToken(request)));
-    }
-
-    private KeyCloakToken extractKeyCloakToken(HttpServletRequest request) {
-        KeyCloakToken token = null;
+    protected String extractTokenFromRequest(HttpServletRequest request) {
         KeycloakSecurityContext session = (KeycloakSecurityContext) request.getAttribute(KeycloakSecurityContext.class.getName());
 
         if (session != null) {
-            token = new KeyCloakToken(session.getTokenString());
+            return session.getTokenString();
         }
-        return token;
-    }
 
-    @Override
-    public boolean postAuthentication(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        IdentityManager identityManager = this.identityManagerInstance.get();
-        KeyCloakToken keyCloakToken = extractKeyCloakToken(request);
-
-        identityManager.updateCredential(getIdentity().getAccount(), keyCloakToken);
-
-        return true;
+        return null;
     }
 }
