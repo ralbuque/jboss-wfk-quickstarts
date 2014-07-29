@@ -24,18 +24,14 @@ package org.jboss.quickstarts.wfk.contacts.security.authentication;
 import org.picketlink.authentication.web.TokenAuthenticationScheme;
 import org.picketlink.common.constants.GeneralConstants;
 import org.picketlink.common.util.DocumentUtil;
-import org.picketlink.credential.DefaultLoginCredentials;
 import org.picketlink.idm.IdentityManager;
-import org.picketlink.idm.credential.TokenCredential;
 import org.w3c.dom.Document;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.io.IOException;
 
 /**
  * @author Pedro Igor
@@ -47,30 +43,17 @@ public class PicketLinkSAMLAuthenticationScheme extends TokenAuthenticationSchem
     private Instance<IdentityManager> identityManagerInstance;
 
     @Override
-    protected void extractTokenFromRequest(HttpServletRequest request, DefaultLoginCredentials creds) {
-        creds.setCredential(new TokenCredential(extractSAMLToken(request)));
-    }
-
-    @Override
-    public boolean postAuthentication(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        IdentityManager identityManager = this.identityManagerInstance.get();
-
-        identityManager.updateCredential(getIdentity().getAccount(), extractSAMLToken(request));
-
-        return true;
-    }
-
-    private SAMLToken extractSAMLToken(HttpServletRequest request) {
-        SAMLToken token = null;
+    protected String extractTokenFromRequest(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
 
         if (session != null) {
             Document assertion = (Document) session.getAttribute(GeneralConstants.ASSERTION_SESSION_ATTRIBUTE_NAME);
 
             if (assertion != null) {
-                token = new SAMLToken(DocumentUtil.asString(assertion));
+                return DocumentUtil.asString(assertion);
             }
         }
-        return token;
+
+        return null;
     }
 }

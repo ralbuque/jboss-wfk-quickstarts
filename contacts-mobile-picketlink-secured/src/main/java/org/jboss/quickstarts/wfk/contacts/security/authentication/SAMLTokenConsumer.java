@@ -92,6 +92,11 @@ public class SAMLTokenConsumer implements Token.Consumer<SAMLToken> {
         return account;
     }
 
+    @Override
+    public Class<SAMLToken> getTokenType() {
+        return SAMLToken.class;
+    }
+
     private <T extends IdentityType> T extractIdentityTypeFromToken(SAMLToken SAMLToken, Class<T> identityType, StereotypeProperty.Property stereotypeProperty, Object identifier) {
         if (hasIdentityType(SAMLToken, stereotypeProperty, identifier)) {
             try {
