@@ -78,7 +78,7 @@ public class KeyCloakTokenConsumer implements Token.Consumer<KeyCloakToken> {
 
         System.out.println(before);
 
-        return true;
+        return before;
     }
 
     @Override
