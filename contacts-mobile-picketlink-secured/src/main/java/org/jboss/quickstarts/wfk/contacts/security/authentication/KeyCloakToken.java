@@ -88,17 +88,14 @@ public class KeyCloakToken implements Token {
         return this.jws.getExpirationDate();
     }
 
-    public String getUserId() {
-        return this.jws.getSubject();
-    }
-
-    public String getRealm() {
-        return this.jws.getIssuer();
-    }
-
     @Override
     public String getType() {
         return getClass().getName();
+    }
+
+    @Override
+    public String getSubject() {
+        return this.jws.getSubject();
     }
 
     @Override

@@ -27,11 +27,8 @@ import org.picketlink.common.properties.query.PropertyQueries;
 import org.picketlink.common.reflection.Reflections;
 import org.picketlink.idm.IdentityManagementException;
 import org.picketlink.idm.credential.Token;
-import org.picketlink.idm.model.Account;
 import org.picketlink.idm.model.IdentityType;
 import org.picketlink.idm.model.annotation.StereotypeProperty;
-import org.picketlink.idm.model.basic.Realm;
-import org.picketlink.idm.model.basic.User;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.Date;
@@ -46,21 +43,6 @@ import static org.picketlink.idm.IDMMessages.MESSAGES;
  */
 @ApplicationScoped
 public class KeyCloakTokenConsumer implements Token.Consumer<KeyCloakToken> {
-
-    @Override
-    public Account getAccount(KeyCloakToken token) {
-        User account = new User(token.getUserName());
-
-        account.setId(token.getUserId());
-
-        Realm partition = new Realm(token.getRealm());
-
-        partition.setId(partition.getName());
-
-        account.setPartition(partition);
-
-        return account;
-    }
 
     @Override
     public Class<KeyCloakToken> getTokenType() {
@@ -100,11 +82,6 @@ public class KeyCloakTokenConsumer implements Token.Consumer<KeyCloakToken> {
         }
 
         return extractIdentityTypeFromToken(token, identityType, stereotypeProperty, identifier);
-    }
-
-    @Override
-    public boolean supports(KeyCloakToken token) {
-        return true;
     }
 
     private <T extends IdentityType> T extractIdentityTypeFromToken(KeyCloakToken keyCloakToken, Class<T> identityType, StereotypeProperty.Property stereotypeProperty, Object identifier) {
@@ -164,9 +141,9 @@ public class KeyCloakTokenConsumer implements Token.Consumer<KeyCloakToken> {
         }
 
         if (StereotypeProperty.Property.IDENTITY_USER_NAME.equals(stereotypeProperty)) {
-            String userName = keyCloakToken.getUserName();
+            String subject = keyCloakToken.getSubject();
 
-            if (userName != null && identifier.equals(userName)) {
+            if (subject != null && identifier.equals(subject)) {
                 return true;
             }
         }
