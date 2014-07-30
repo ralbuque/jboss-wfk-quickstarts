@@ -27,14 +27,12 @@ import org.picketlink.common.properties.query.PropertyQueries;
 import org.picketlink.common.reflection.Reflections;
 import org.picketlink.idm.IdentityManagementException;
 import org.picketlink.idm.credential.Token;
-import org.picketlink.idm.model.Account;
 import org.picketlink.idm.model.IdentityType;
 import org.picketlink.idm.model.annotation.StereotypeProperty;
-import org.picketlink.idm.model.basic.Realm;
-import org.picketlink.idm.model.basic.User;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.List;
+import java.util.Set;
 
 import static org.picketlink.idm.IDMMessages.MESSAGES;
 
@@ -44,10 +42,10 @@ import static org.picketlink.idm.IDMMessages.MESSAGES;
  * @author Pedro Igor
  */
 @ApplicationScoped
-public class SAMLTokenConsumer implements Token.Consumer<SAMLToken> {
+public class SAMLTokenConsumer implements Token.Consumer<SAMLAssertion> {
 
     @Override
-    public <T extends IdentityType> T extractIdentity(SAMLToken token, Class<T> identityType, StereotypeProperty.Property stereotypeProperty, Object identifier) {
+    public <T extends IdentityType> T extractIdentity(SAMLAssertion token, Class<T> identityType, StereotypeProperty.Property stereotypeProperty, Object identifier) {
         if (token == null || token.getToken() == null) {
             throw MESSAGES.nullArgument("Token");
         }
@@ -68,36 +66,17 @@ public class SAMLTokenConsumer implements Token.Consumer<SAMLToken> {
     }
 
     @Override
-    public boolean supports(SAMLToken token) {
+    public boolean validate(SAMLAssertion token) {
+        // all validation is done by the PicketLink Authenticator.
         return true;
     }
 
     @Override
-    public boolean validate(SAMLToken token) {
-        return true;
+    public Class<SAMLAssertion> getTokenType() {
+        return SAMLAssertion.class;
     }
 
-    @Override
-    public Account getAccount(SAMLToken token) {
-        User account = new User(token.getUserName());
-
-        account.setId(token.getUserId());
-
-        Realm partition = new Realm(token.getRealm());
-
-        partition.setId(partition.getName());
-
-        account.setPartition(partition);
-
-        return account;
-    }
-
-    @Override
-    public Class<SAMLToken> getTokenType() {
-        return SAMLToken.class;
-    }
-
-    private <T extends IdentityType> T extractIdentityTypeFromToken(SAMLToken SAMLToken, Class<T> identityType, StereotypeProperty.Property stereotypeProperty, Object identifier) {
+    private <T extends IdentityType> T extractIdentityTypeFromToken(SAMLAssertion SAMLToken, Class<T> identityType, StereotypeProperty.Property stereotypeProperty, Object identifier) {
         if (hasIdentityType(SAMLToken, stereotypeProperty, identifier)) {
             try {
                 T identityTypeInstance = Reflections.newInstance(identityType);
@@ -114,7 +93,6 @@ public class SAMLTokenConsumer implements Token.Consumer<SAMLToken> {
         return null;
     }
 
-    //TODO: reuse
     private Property resolveProperty(Class<? extends IdentityType> identityType, StereotypeProperty.Property stereotypeProperty) {
         List<Property<Object>> properties = PropertyQueries
             .createQuery(identityType)
@@ -136,25 +114,17 @@ public class SAMLTokenConsumer implements Token.Consumer<SAMLToken> {
         throw new IdentityManagementException("Could not resolve property in type [" + identityType + " for StereotypeProperty [" + stereotypeProperty + ".");
     }
 
-    private boolean hasIdentityType(SAMLToken samlToken, StereotypeProperty.Property stereotypeProperty, Object identifier) {
+    private boolean hasIdentityType(SAMLAssertion samlAssertion, StereotypeProperty.Property stereotypeProperty, Object identifier) {
         if (StereotypeProperty.Property.IDENTITY_ROLE_NAME.equals(stereotypeProperty)) {
-            List<String> roleNames = samlToken.getRoles();
+            Set<String> roleNames = samlAssertion.getRoles();
 
             if (roleNames.contains(identifier)) {
                 return true;
             }
         }
 
-        if (StereotypeProperty.Property.IDENTITY_GROUP_NAME.equals(stereotypeProperty)) {
-            List<String> groupNames = samlToken.getGroups();
-
-            if (groupNames.contains(identifier)) {
-                return true;
-            }
-        }
-
         if (StereotypeProperty.Property.IDENTITY_USER_NAME.equals(stereotypeProperty)) {
-            String userName = samlToken.getUserName();
+            String userName = samlAssertion.getSubject();
 
             if (userName != null && identifier.equals(userName)) {
                 return true;

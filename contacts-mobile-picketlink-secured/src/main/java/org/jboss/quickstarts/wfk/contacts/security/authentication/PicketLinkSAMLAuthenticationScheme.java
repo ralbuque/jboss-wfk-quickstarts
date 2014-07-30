@@ -22,16 +22,14 @@
 package org.jboss.quickstarts.wfk.contacts.security.authentication;
 
 import org.picketlink.authentication.web.TokenAuthenticationScheme;
-import org.picketlink.common.constants.GeneralConstants;
-import org.picketlink.common.util.DocumentUtil;
-import org.picketlink.idm.IdentityManager;
 import org.w3c.dom.Document;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Instance;
-import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+
+import static org.picketlink.common.constants.GeneralConstants.ASSERTION_SESSION_ATTRIBUTE_NAME;
+import static org.picketlink.common.util.DocumentUtil.asString;
 
 /**
  * @author Pedro Igor
@@ -39,18 +37,15 @@ import javax.servlet.http.HttpSession;
 @ApplicationScoped
 public class PicketLinkSAMLAuthenticationScheme extends TokenAuthenticationScheme {
 
-    @Inject
-    private Instance<IdentityManager> identityManagerInstance;
-
     @Override
     protected String extractTokenFromRequest(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
 
         if (session != null) {
-            Document assertion = (Document) session.getAttribute(GeneralConstants.ASSERTION_SESSION_ATTRIBUTE_NAME);
+            Document assertion = (Document) session.getAttribute(ASSERTION_SESSION_ATTRIBUTE_NAME);
 
             if (assertion != null) {
-                return DocumentUtil.asString(assertion);
+                return asString(assertion);
             }
         }
 
