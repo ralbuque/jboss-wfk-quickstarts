@@ -22,20 +22,14 @@
 package org.jboss.quickstarts.wfk.contacts.security.authentication;
 
 import org.keycloak.KeycloakSecurityContext;
-import org.picketlink.authentication.web.TokenAuthenticationScheme;
-import org.picketlink.idm.IdentityManager;
+import org.picketlink.http.internal.schemes.TokenAuthenticationScheme;
 
-import javax.enterprise.inject.Instance;
-import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author Pedro Igor
  */
 public class KeyCloakAuthenticationScheme extends TokenAuthenticationScheme {
-
-    @Inject
-    private Instance<IdentityManager> identityManagerInstance;
 
     @Override
     protected String extractTokenFromRequest(HttpServletRequest request) {

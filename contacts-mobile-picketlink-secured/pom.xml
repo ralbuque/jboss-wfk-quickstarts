@@ -317,14 +317,14 @@
         <dependency>
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-core</artifactId>
-            <version>1.0-beta-4-SNAPSHOT</version>
+            <version>1.0-rc-1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-wildfly-adapter</artifactId>
-            <version>1.0-beta-4-SNAPSHOT</version>
+            <version>1.0-rc-1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
 

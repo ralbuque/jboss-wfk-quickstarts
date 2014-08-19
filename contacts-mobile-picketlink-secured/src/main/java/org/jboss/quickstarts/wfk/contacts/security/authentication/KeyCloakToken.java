@@ -21,7 +21,7 @@
  */
 package org.jboss.quickstarts.wfk.contacts.security.authentication;
 
-import org.picketlink.idm.credential.Token;
+import org.picketlink.idm.credential.AbstractToken;
 import org.picketlink.json.jose.JWS;
 import org.picketlink.json.jose.JWSBuilder;
 
@@ -29,28 +29,35 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonString;
 import javax.json.JsonValue;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
+import java.util.Set;
 
 /**
  * @author Pedro Igor
  */
-public class KeyCloakToken implements Token {
+public class KeyCloakToken extends AbstractToken {
 
     private final JWS jws;
-    private final String encodedToken;
 
     public KeyCloakToken(String encodedToken) {
-        this.encodedToken = encodedToken;
+        super(encodedToken);
         this.jws = new JWSBuilder().build(encodedToken);
     }
 
-    public List<String> getRoles() {
-        List<String> roles = new ArrayList<String>();
+    @Override
+    public String getSubject() {
+        return this.jws.getSubject();
+    }
+
+    public String getUserName() {
+        return this.jws.getClaim("preferred_username");
+    }
+
+    public Set<String> getRoles() {
+        Set<String> roles = new HashSet<String>();
         JsonObject resourceAccess = this.jws.getClaims().getJsonObject("resource_access");
 
         if (resourceAccess != null) {
@@ -66,43 +73,12 @@ public class KeyCloakToken implements Token {
 
                     while (rolesIterator.hasNext()) {
                         JsonString role = (JsonString) rolesIterator.next();
-
                         roles.add(role.getString());
                     }
                 }
             }
         }
 
-        return Collections.unmodifiableList(roles);
-    }
-
-    public String getUserName() {
-        return this.jws.getClaim("preferred_username");
-    }
-
-    public List<String> getGroups() {
-        return Collections.emptyList();
-    }
-
-    public Date getExpiration() {
-        return this.jws.getExpirationDate();
-    }
-
-    public String getUserId() {
-        return this.jws.getSubject();
-    }
-
-    public String getRealm() {
-        return this.jws.getIssuer();
-    }
-
-    @Override
-    public String getType() {
-        return getClass().getName();
-    }
-
-    @Override
-    public String getToken() {
-        return this.encodedToken;
+        return Collections.unmodifiableSet(roles);
     }
 }

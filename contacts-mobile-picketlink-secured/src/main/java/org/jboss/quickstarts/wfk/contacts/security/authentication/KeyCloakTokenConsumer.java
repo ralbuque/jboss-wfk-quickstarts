@@ -21,23 +21,12 @@
  */
 package org.jboss.quickstarts.wfk.contacts.security.authentication;
 
-import org.picketlink.common.properties.Property;
-import org.picketlink.common.properties.query.AnnotatedPropertyCriteria;
-import org.picketlink.common.properties.query.PropertyQueries;
-import org.picketlink.common.reflection.Reflections;
-import org.picketlink.idm.IdentityManagementException;
-import org.picketlink.idm.credential.Token;
-import org.picketlink.idm.model.Account;
-import org.picketlink.idm.model.IdentityType;
-import org.picketlink.idm.model.annotation.StereotypeProperty;
-import org.picketlink.idm.model.basic.Realm;
-import org.picketlink.idm.model.basic.User;
+import org.picketlink.idm.credential.AbstractTokenConsumer;
 
 import javax.enterprise.context.ApplicationScoped;
-import java.util.Date;
-import java.util.List;
+import java.util.Set;
 
-import static org.picketlink.idm.IDMMessages.MESSAGES;
+import static java.util.Collections.emptySet;
 
 /**
  * <p>A {@link org.picketlink.idm.credential.Token.Provider} to manage JSON Web Signature tokens.</p>
@@ -45,128 +34,11 @@ import static org.picketlink.idm.IDMMessages.MESSAGES;
  * @author Pedro Igor
  */
 @ApplicationScoped
-public class KeyCloakTokenConsumer implements Token.Consumer<KeyCloakToken> {
-
-    @Override
-    public Account getAccount(KeyCloakToken token) {
-        User account = new User(token.getUserName());
-
-        account.setId(token.getUserId());
-
-        Realm partition = new Realm(token.getRealm());
-
-        partition.setId(partition.getName());
-
-        account.setPartition(partition);
-
-        return account;
-    }
+public class KeyCloakTokenConsumer extends AbstractTokenConsumer<KeyCloakToken> {
 
     @Override
     public boolean validate(KeyCloakToken token) {
-        Date expirationDate = token.getExpiration();
-
-        System.out.println(expirationDate);
-        System.out.println(new Date());
-
-        boolean before = new Date().before(expirationDate);
-
-        System.out.println(before);
-
         return true;
-    }
-
-    @Override
-    public <T extends IdentityType> T extractIdentity(KeyCloakToken token, Class<T> identityType, StereotypeProperty.Property stereotypeProperty, Object identifier) {
-        if (token == null || token.getToken() == null) {
-            throw MESSAGES.nullArgument("Token");
-        }
-
-        if (identityType == null) {
-            throw MESSAGES.nullArgument("IdentityType");
-        }
-
-        if (stereotypeProperty == null) {
-            throw MESSAGES.nullArgument("Identifier value");
-        }
-
-        if (identifier == null) {
-            throw MESSAGES.nullArgument("Identifier value");
-        }
-
-        return extractIdentityTypeFromToken(token, identityType, stereotypeProperty, identifier);
-    }
-
-    @Override
-    public boolean supports(KeyCloakToken token) {
-        return true;
-    }
-
-    private <T extends IdentityType> T extractIdentityTypeFromToken(KeyCloakToken keyCloakToken, Class<T> identityType, StereotypeProperty.Property stereotypeProperty, Object identifier) {
-        if (hasIdentityType(keyCloakToken, stereotypeProperty, identifier)) {
-            try {
-                T identityTypeInstance = Reflections.newInstance(identityType);
-                Property property = resolveProperty(identityType, stereotypeProperty);
-
-                property.setValue(identityTypeInstance, identifier);
-
-                return identityTypeInstance;
-            } catch (Exception e) {
-                throw new IdentityManagementException("Could not extract IdentityType [" + identityType + "] from Token [" + keyCloakToken + "].", e);
-            }
-        }
-
-        return null;
-    }
-
-    //TODO: reuse
-    private Property resolveProperty(Class<? extends IdentityType> identityType, StereotypeProperty.Property stereotypeProperty) {
-        List<Property<Object>> properties = PropertyQueries
-            .createQuery(identityType)
-            .addCriteria(new AnnotatedPropertyCriteria(StereotypeProperty.class))
-            .getResultList();
-
-        if (properties.isEmpty()) {
-            throw new IdentityManagementException("IdentityType [" + identityType + "] does not have any property mapped with " + StereotypeProperty.class + ".");
-        }
-
-        for (Property property : properties) {
-            StereotypeProperty propertyStereotypeProperty = property.getAnnotatedElement().getAnnotation(StereotypeProperty.class);
-
-            if (stereotypeProperty.equals(propertyStereotypeProperty.value())) {
-                return property;
-            }
-        }
-
-        throw new IdentityManagementException("Could not resolve property in type [" + identityType + " for StereotypeProperty [" + stereotypeProperty + ".");
-    }
-
-    private boolean hasIdentityType(KeyCloakToken keyCloakToken, StereotypeProperty.Property stereotypeProperty, Object identifier) {
-        if (StereotypeProperty.Property.IDENTITY_ROLE_NAME.equals(stereotypeProperty)) {
-            List<String> roleNames = keyCloakToken.getRoles();
-
-            if (roleNames.contains(identifier)) {
-                return true;
-            }
-        }
-
-        if (StereotypeProperty.Property.IDENTITY_GROUP_NAME.equals(stereotypeProperty)) {
-            List<String> groupNames = keyCloakToken.getGroups();
-
-            if (groupNames.contains(identifier)) {
-                return true;
-            }
-        }
-
-        if (StereotypeProperty.Property.IDENTITY_USER_NAME.equals(stereotypeProperty)) {
-            String userName = keyCloakToken.getUserName();
-
-            if (userName != null && identifier.equals(userName)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     @Override
@@ -174,4 +46,18 @@ public class KeyCloakTokenConsumer implements Token.Consumer<KeyCloakToken> {
         return KeyCloakToken.class;
     }
 
+    @Override
+    protected String extractSubject(KeyCloakToken keyCloakToken) {
+        return keyCloakToken.getSubject();
+    }
+
+    @Override
+    protected Set<String> extractRoles(KeyCloakToken keyCloakToken) {
+        return keyCloakToken.getRoles();
+    }
+
+    @Override
+    protected Set<String> extractGroups(KeyCloakToken token) {
+        return emptySet();
+    }
 }

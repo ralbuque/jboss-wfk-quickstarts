@@ -22,32 +22,17 @@
 package org.jboss.quickstarts.wfk.contacts.security;
 
 import org.jboss.quickstarts.wfk.contacts.security.authentication.KeyCloakAuthenticationScheme;
-import org.picketlink.annotations.PicketLink;
-import org.picketlink.authentication.web.HTTPAuthenticationScheme;
 import org.picketlink.config.SecurityConfigurationBuilder;
 import org.picketlink.event.SecurityConfigurationEvent;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
-import javax.enterprise.inject.Produces;
-import javax.inject.Inject;
 
 /**
- * <p>This class is responsible to enable the {@link org.picketlink.authentication.web.TokenAuthenticationScheme}.</p>
- *
  * @author Pedro Igor
  */
 @ApplicationScoped
 public class SecurityConfiguration {
-
-    @Inject
-    private KeyCloakAuthenticationScheme tokenAuthenticationScheme;
-
-    @Produces
-    @PicketLink
-    public HTTPAuthenticationScheme configureTokenAuthenticationScheme() {
-        return this.tokenAuthenticationScheme;
-    }
 
     public void configureIdentityManagement(@Observes SecurityConfigurationEvent event) {
         SecurityConfigurationBuilder builder = event.getBuilder();
@@ -55,6 +40,10 @@ public class SecurityConfiguration {
         builder
             .identity()
                 .stateless()
+            .http()
+                .allPaths()
+                    .authc()
+                        .scheme(KeyCloakAuthenticationScheme.class)
             .idmConfig()
                 .named("default.config")
                     .stores()

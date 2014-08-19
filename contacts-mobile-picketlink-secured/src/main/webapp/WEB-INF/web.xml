@@ -18,17 +18,6 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
 
-    <filter>
-        <filter-name>AuthenticationFilter</filter-name>
-        <filter-class>org.picketlink.authentication.web.AuthenticationFilter</filter-class>
-	</filter>
-
-    <!-- Protect RESTful endpoints -->
-    <filter-mapping>
-        <filter-name>AuthenticationFilter</filter-name>
-        <url-pattern>/rest/private/*</url-pattern>
-    </filter-mapping>
-
     <security-constraint>
         <web-resource-collection>
             <web-resource-name>Products</web-resource-name>
