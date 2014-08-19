@@ -52,10 +52,6 @@ public class KeyCloakToken extends AbstractToken {
         return this.jws.getSubject();
     }
 
-    public String getUserName() {
-        return this.jws.getClaim("preferred_username");
-    }
-
     public Set<String> getRoles() {
         Set<String> roles = new HashSet<String>();
         JsonObject resourceAccess = this.jws.getClaims().getJsonObject("resource_access");
