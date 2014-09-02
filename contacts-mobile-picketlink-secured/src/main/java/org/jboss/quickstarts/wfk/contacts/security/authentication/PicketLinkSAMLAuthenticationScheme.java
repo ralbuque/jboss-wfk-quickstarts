@@ -21,7 +21,7 @@
  */
 package org.jboss.quickstarts.wfk.contacts.security.authentication;
 
-import org.picketlink.authentication.web.TokenAuthenticationScheme;
+import org.picketlink.http.internal.schemes.TokenAuthenticationScheme;
 import org.w3c.dom.Document;
 
 import javax.enterprise.context.ApplicationScoped;

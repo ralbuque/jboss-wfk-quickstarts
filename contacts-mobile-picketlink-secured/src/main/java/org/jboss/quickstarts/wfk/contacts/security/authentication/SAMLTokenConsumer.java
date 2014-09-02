@@ -21,20 +21,12 @@
  */
 package org.jboss.quickstarts.wfk.contacts.security.authentication;
 
-import org.picketlink.common.properties.Property;
-import org.picketlink.common.properties.query.AnnotatedPropertyCriteria;
-import org.picketlink.common.properties.query.PropertyQueries;
-import org.picketlink.common.reflection.Reflections;
-import org.picketlink.idm.IdentityManagementException;
-import org.picketlink.idm.credential.Token;
-import org.picketlink.idm.model.IdentityType;
-import org.picketlink.idm.model.annotation.StereotypeProperty;
+import org.picketlink.idm.credential.AbstractTokenConsumer;
 
 import javax.enterprise.context.ApplicationScoped;
-import java.util.List;
 import java.util.Set;
 
-import static org.picketlink.idm.IDMMessages.MESSAGES;
+import static java.util.Collections.emptySet;
 
 /**
  * <p>A {@link org.picketlink.idm.credential.Token.Provider} to manage JSON Web Signature tokens.</p>
@@ -42,28 +34,7 @@ import static org.picketlink.idm.IDMMessages.MESSAGES;
  * @author Pedro Igor
  */
 @ApplicationScoped
-public class SAMLTokenConsumer implements Token.Consumer<SAMLAssertion> {
-
-    @Override
-    public <T extends IdentityType> T extractIdentity(SAMLAssertion token, Class<T> identityType, StereotypeProperty.Property stereotypeProperty, Object identifier) {
-        if (token == null || token.getToken() == null) {
-            throw MESSAGES.nullArgument("Token");
-        }
-
-        if (identityType == null) {
-            throw MESSAGES.nullArgument("IdentityType");
-        }
-
-        if (stereotypeProperty == null) {
-            throw MESSAGES.nullArgument("Identifier value");
-        }
-
-        if (identifier == null) {
-            throw MESSAGES.nullArgument("Identifier value");
-        }
-
-        return extractIdentityTypeFromToken(token, identityType, stereotypeProperty, identifier);
-    }
+public class SAMLTokenConsumer extends AbstractTokenConsumer<SAMLAssertion> {
 
     @Override
     public boolean validate(SAMLAssertion token) {
@@ -76,61 +47,18 @@ public class SAMLTokenConsumer implements Token.Consumer<SAMLAssertion> {
         return SAMLAssertion.class;
     }
 
-    private <T extends IdentityType> T extractIdentityTypeFromToken(SAMLAssertion SAMLToken, Class<T> identityType, StereotypeProperty.Property stereotypeProperty, Object identifier) {
-        if (hasIdentityType(SAMLToken, stereotypeProperty, identifier)) {
-            try {
-                T identityTypeInstance = Reflections.newInstance(identityType);
-                Property property = resolveProperty(identityType, stereotypeProperty);
-
-                property.setValue(identityTypeInstance, identifier);
-
-                return identityTypeInstance;
-            } catch (Exception e) {
-                throw new IdentityManagementException("Could not extract IdentityType [" + identityType + "] from Token [" + SAMLToken + "].", e);
-            }
-        }
-
-        return null;
+    @Override
+    protected String extractSubject(SAMLAssertion token) {
+        return token.getSubject();
     }
 
-    private Property resolveProperty(Class<? extends IdentityType> identityType, StereotypeProperty.Property stereotypeProperty) {
-        List<Property<Object>> properties = PropertyQueries
-            .createQuery(identityType)
-            .addCriteria(new AnnotatedPropertyCriteria(StereotypeProperty.class))
-            .getResultList();
-
-        if (properties.isEmpty()) {
-            throw new IdentityManagementException("IdentityType [" + identityType + "] does not have any property mapped with " + StereotypeProperty.class + ".");
-        }
-
-        for (Property property : properties) {
-            StereotypeProperty propertyStereotypeProperty = property.getAnnotatedElement().getAnnotation(StereotypeProperty.class);
-
-            if (stereotypeProperty.equals(propertyStereotypeProperty.value())) {
-                return property;
-            }
-        }
-
-        throw new IdentityManagementException("Could not resolve property in type [" + identityType + " for StereotypeProperty [" + stereotypeProperty + ".");
+    @Override
+    protected Set<String> extractRoles(SAMLAssertion token) {
+        return token.getRoles();
     }
 
-    private boolean hasIdentityType(SAMLAssertion samlAssertion, StereotypeProperty.Property stereotypeProperty, Object identifier) {
-        if (StereotypeProperty.Property.IDENTITY_ROLE_NAME.equals(stereotypeProperty)) {
-            Set<String> roleNames = samlAssertion.getRoles();
-
-            if (roleNames.contains(identifier)) {
-                return true;
-            }
-        }
-
-        if (StereotypeProperty.Property.IDENTITY_USER_NAME.equals(stereotypeProperty)) {
-            String userName = samlAssertion.getSubject();
-
-            if (userName != null && identifier.equals(userName)) {
-                return true;
-            }
-        }
-
-        return false;
+    @Override
+    protected Set<String> extractGroups(SAMLAssertion token) {
+        return emptySet();
     }
 }
