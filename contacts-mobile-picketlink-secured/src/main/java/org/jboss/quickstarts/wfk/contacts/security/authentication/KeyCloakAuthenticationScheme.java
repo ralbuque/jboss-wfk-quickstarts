@@ -22,11 +22,14 @@
 package org.jboss.quickstarts.wfk.contacts.security.authentication;
 
 import org.keycloak.KeycloakSecurityContext;
-import org.picketlink.http.internal.schemes.TokenAuthenticationScheme;
+import org.picketlink.http.internal.authentication.schemes.TokenAuthenticationScheme;
 
 import javax.servlet.http.HttpServletRequest;
 
 /**
+ * <p>A {@link org.picketlink.http.authentication.HttpAuthenticationScheme} that knows how to extract a
+ * {@link org.jboss.quickstarts.wfk.contacts.security.authentication.KeyCloakToken} from the request.</p>
+ *
  * @author Pedro Igor
  */
 public class KeyCloakAuthenticationScheme extends TokenAuthenticationScheme {

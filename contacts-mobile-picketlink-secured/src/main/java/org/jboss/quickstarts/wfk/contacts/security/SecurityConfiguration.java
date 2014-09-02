@@ -42,7 +42,7 @@ public class SecurityConfiguration {
                 .stateless()
             .http()
                 .allPaths()
-                    .authc()
+                    .authenticateWith()
                         .scheme(KeyCloakAuthenticationScheme.class)
             .idmConfig()
                 .named("default.config")

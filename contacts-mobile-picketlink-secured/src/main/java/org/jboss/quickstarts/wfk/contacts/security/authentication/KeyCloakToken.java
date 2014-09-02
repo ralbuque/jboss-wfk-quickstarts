@@ -36,6 +36,8 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
+ * <p>Represents a KeyCloak Token.</p>
+ *
  * @author Pedro Igor
  */
 public class KeyCloakToken extends AbstractToken {

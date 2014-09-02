@@ -29,7 +29,8 @@ import java.util.Set;
 import static java.util.Collections.emptySet;
 
 /**
- * <p>A {@link org.picketlink.idm.credential.Token.Provider} to manage JSON Web Signature tokens.</p>
+ * <p>A {@link org.picketlink.idm.credential.Token.Consumer} that knows how to consume information from a
+ * {@link org.jboss.quickstarts.wfk.contacts.security.authentication.KeyCloakToken}.</p>
  *
  * @author Pedro Igor
  */
